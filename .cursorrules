@@ -1,0 +1,20 @@
+Project: AutoCard Marketplace (Greeting Card Platform)
+Stack: Next.js 14 App Router, TypeScript, Tailwind CSS
+Database: Supabase (PostgreSQL)
+Auth: Supabase Auth (email + Google OAuth)
+Payments: Stripe + Stripe Connect + Stripe Tax
+Email: Resend
+File storage: Supabase Storage (bucket: designs)
+Hosting: Vercel
+
+Rules:
+- Always use TypeScript, never JavaScript
+- Always use App Router (app/ directory), never pages/
+- Server components by default; add "use client" only when needed
+- Use lib/supabase/server.ts for server-side queries
+- Use lib/supabase/client.ts for client-side queries
+- Use lib/supabase/admin.ts only in API routes and webhooks
+- Tailwind for all styling, no CSS modules
+- All Supabase tables: users, creators, designs, contacts,
+  contact_events, orders, creator_earnings_ledger, payouts,
+  refund_claims, notifications
