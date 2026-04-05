@@ -47,6 +47,7 @@ type OrderHistoryRow = {
   amount_charged: number | null;
   created_at: string | null;
   personalization: unknown;
+  tracking_number: string | null;
   designs: { title: string; front_image_url: string } | null;
   contacts: { name: string } | null;
 };
@@ -70,6 +71,7 @@ export default async function DashboardOrdersPage() {
       amount_charged,
       created_at,
       personalization,
+      tracking_number,
       designs ( title, front_image_url ),
       contacts ( name )
     `,
@@ -88,6 +90,7 @@ export default async function DashboardOrdersPage() {
       amount_charged: number | null;
       created_at: string | null;
       personalization: unknown;
+      tracking_number: string | null;
       designs:
         | { title: string; front_image_url: string }
         | { title: string; front_image_url: string }[]
@@ -107,6 +110,7 @@ export default async function DashboardOrdersPage() {
             : null,
       created_at: row.created_at,
       personalization: row.personalization,
+      tracking_number: row.tracking_number,
       designs: d,
       contacts: c,
     };
@@ -151,7 +155,9 @@ export default async function DashboardOrdersPage() {
               personalization: o.personalization,
             }),
             recipientName: o.contacts?.name ?? "—",
-            trackingNumber: trackingFromPersonalization(o.personalization),
+            trackingNumber:
+              (o.tracking_number && o.tracking_number.trim()) ||
+              trackingFromPersonalization(o.personalization),
           }))}
         />
       )}

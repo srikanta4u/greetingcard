@@ -45,6 +45,11 @@ const STYLES: Record<
     label: "Skipped",
     className: "bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300",
   },
+  print_failed: {
+    label: "Print failed",
+    className:
+      "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
+  },
 };
 
 export function OrderStatusBadge({ status }: { status: string }) {
