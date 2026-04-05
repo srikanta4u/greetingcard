@@ -22,52 +22,97 @@ function formatMoneyCents(cents: number | null) {
   });
 }
 
+function formatMoneyAmount(n: number | null | undefined) {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export default async function OrderConfirmationPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const raw = await searchParams;
-  const sessionId =
-    typeof raw.session_id === "string" ? raw.session_id.trim() : "";
-  if (!sessionId) {
-    notFound();
-  }
+  const mockOn =
+    raw.mock === "true" ||
+    (Array.isArray(raw.mock) && raw.mock[0] === "true");
+  const mockOrderIdRaw = raw.orderId;
+  const mockOrderId =
+    typeof mockOrderIdRaw === "string"
+      ? mockOrderIdRaw.trim()
+      : Array.isArray(mockOrderIdRaw) && typeof mockOrderIdRaw[0] === "string"
+        ? mockOrderIdRaw[0].trim()
+        : "";
 
-  let session: Awaited<
-    ReturnType<typeof stripe.checkout.sessions.retrieve>
-  > | null = null;
-  try {
-    session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ["line_items"],
-    });
-  } catch {
-    notFound();
-  }
-
-  const paid = session.payment_status === "paid";
-  const orderId =
-    typeof session.metadata?.orderId === "string"
-      ? session.metadata.orderId.trim()
-      : "";
-
+  let paid: boolean;
   let personalization: Personalization | null = null;
-  if (orderId) {
+  let totalLabel: string;
+
+  if (mockOn && mockOrderId) {
     const { data: order } = await adminClient
       .from("orders")
-      .select("personalization")
-      .eq("id", orderId)
+      .select("personalization, amount_charged")
+      .eq("id", mockOrderId)
       .maybeSingle();
-    const p = order?.personalization;
+    if (!order) {
+      notFound();
+    }
+    paid = true;
+    const p = order.personalization;
     if (p && typeof p === "object" && !Array.isArray(p)) {
       personalization = p as Personalization;
     }
+    totalLabel = formatMoneyAmount(
+      typeof order.amount_charged === "number"
+        ? order.amount_charged
+        : Number(order.amount_charged),
+    );
+  } else {
+    const sessionId =
+      typeof raw.session_id === "string" ? raw.session_id.trim() : "";
+    if (!sessionId) {
+      notFound();
+    }
+
+    let session: Awaited<
+      ReturnType<typeof stripe.checkout.sessions.retrieve>
+    > | null = null;
+    try {
+      session = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ["line_items"],
+      });
+    } catch {
+      notFound();
+    }
+
+    paid = session.payment_status === "paid";
+    const orderId =
+      typeof session.metadata?.orderId === "string"
+        ? session.metadata.orderId.trim()
+        : "";
+
+    if (orderId) {
+      const { data: order } = await adminClient
+        .from("orders")
+        .select("personalization")
+        .eq("id", orderId)
+        .maybeSingle();
+      const p = order?.personalization;
+      if (p && typeof p === "object" && !Array.isArray(p)) {
+        personalization = p as Personalization;
+      }
+    }
+
+    totalLabel = formatMoneyCents(session.amount_total);
   }
 
   const title =
-    personalization?.designTitle ??
-    session.line_items?.data[0]?.description ??
-    "Your card";
+    personalization?.designTitle ?? "Your card";
 
   const messagePreview = personalization?.message
     ? personalization.message.slice(0, 160) +
@@ -130,7 +175,7 @@ export default async function OrderConfirmationPage({
                   </p>
                 ) : null}
                 <p className="text-sm text-zinc-500 dark:text-zinc-500">
-                  Total paid {formatMoneyCents(session.amount_total)}
+                  Total paid {totalLabel}
                 </p>
               </div>
             </div>

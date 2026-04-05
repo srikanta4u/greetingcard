@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/supabase/admin";
-import { stripe } from "@/lib/stripe";
 import { NextResponse } from "next/server";
 
 const TAX_RATE = 0.08;
@@ -86,14 +85,6 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL;
-  if (!baseUrl) {
-    return NextResponse.json(
-      { error: "NEXT_PUBLIC_URL is not configured" },
-      { status: 500 },
-    );
-  }
-
   if (user) {
     if (contactId) {
       const { data: contact, error: contactErr } = await adminClient
@@ -151,7 +142,6 @@ export async function POST(request: Request) {
 
   const tax = Math.round(cardPrice * TAX_RATE * 100) / 100;
   const total = Math.round((cardPrice + tax) * 100) / 100;
-  const amountCents = Math.round(total * 100);
 
   let recipientSnapshot: StandardizedAddress | null = null;
   if (contactId) {
@@ -209,55 +199,8 @@ export async function POST(request: Request) {
   }
 
   const orderId = orderRow.id as string;
-  const metaUserId = user?.id ?? "";
-  const metadata = {
-    orderId,
-    userId: metaUserId,
-  };
 
-  const customerEmail =
-    user?.email?.trim() ||
-    (!user ? guestEmailRaw : undefined);
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      ...(customerEmail ? { customer_email: customerEmail } : {}),
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: amountCents,
-            product_data: {
-              name: `Card: ${design.title}`,
-              images: design.front_image_url
-                ? [design.front_image_url]
-                : undefined,
-            },
-          },
-        },
-      ],
-      success_url: `${baseUrl.replace(/\/$/, "")}/order-confirmation?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl.replace(/\/$/, "")}/checkout`,
-      metadata,
-      payment_intent_data: {
-        metadata,
-      },
-    });
-
-    if (!session.url) {
-      return NextResponse.json(
-        { error: "Checkout session did not return a URL" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({ checkoutUrl: session.url });
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to create checkout session";
-    console.error("[orders/instant] stripe.checkout.sessions.create:", err);
-    return NextResponse.json({ error: message }, { status: 502 });
-  }
+  /* TODO: Replace with real Stripe Checkout — stripe.checkout.sessions.create */
+  const checkoutUrl = `/order-confirmation?mock=true&orderId=${orderId}`;
+  return NextResponse.json({ checkoutUrl });
 }
