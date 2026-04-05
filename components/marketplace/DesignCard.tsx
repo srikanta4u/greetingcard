@@ -25,6 +25,7 @@ function formatMoney(n: number) {
 export function DesignCard({ design }: { design: MarketplaceDesign }) {
   const price = finalPrice(design);
 
+  /** Card detail + WYSIWYG customizer */
   return (
     <Link
       href={`/marketplace/${design.id}`}

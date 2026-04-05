@@ -212,6 +212,7 @@ export default async function MarketplacePage({
               </div>
             ) : (
               <>
+                {/* Each card links to /marketplace/[id] (see DesignCard href) */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
                   {designs.map((d) => (
                     <DesignCard key={d.id} design={d} />
