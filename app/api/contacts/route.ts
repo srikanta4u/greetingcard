@@ -137,7 +137,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // Insert columns must match public.contacts (see supabase/sql/contacts_setup.sql)
+  // Must match public.contacts columns (snake_case)
   const insertRow = {
     user_id: user.id,
     name,
@@ -148,14 +148,17 @@ export async function POST(request: Request) {
     state,
     postal_code,
     country,
+    address_validated: true,
   };
 
-  const { data: row, error } = await supabase
-    .from("contacts")
-    .insert(insertRow)
-    .select(
-      `
+  try {
+    const { data: row, error } = await supabase
+      .from("contacts")
+      .insert(insertRow)
+      .select(
+        `
       id,
+      user_id,
       name,
       relationship,
       address_line1,
@@ -164,7 +167,9 @@ export async function POST(request: Request) {
       state,
       postal_code,
       country,
+      address_validated,
       created_at,
+      deleted_at,
       contact_events (
         id,
         event_type,
@@ -172,20 +177,38 @@ export async function POST(request: Request) {
         recurs_annually
       )
     `,
-    )
-    .single();
+      )
+      .single();
 
-  if (error) {
-    console.error("[contacts POST]", error.message, error.code, error.details);
+    if (error) {
+      console.error("[contacts POST] Supabase error:", error);
+      console.log(
+        "[contacts POST] Supabase message:",
+        error.message,
+        "code:",
+        error.code,
+        "details:",
+        error.details,
+      );
+      return NextResponse.json(
+        {
+          error: "Could not create contact",
+          details: error.message,
+          code: error.code,
+        },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ contact: row });
+  } catch (err) {
+    console.log("[contacts POST] catch:", err);
     return NextResponse.json(
       {
         error: "Could not create contact",
-        details: error.message,
-        code: error.code,
+        details: err instanceof Error ? err.message : String(err),
       },
       { status: 500 },
     );
   }
-
-  return NextResponse.json({ contact: row });
 }
