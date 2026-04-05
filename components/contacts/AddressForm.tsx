@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export type StandardizedAddress = {
   address_line1: string;
@@ -28,6 +29,12 @@ function formatAddressForDisplay(a: StandardizedAddress) {
   return `${a.address_line1}${line2}, ${a.city}, ${a.state} ${a.postal_code}, ${a.country}`;
 }
 
+function devLog(...args: unknown[]) {
+  if (process.env.NODE_ENV === "development") {
+    console.log("[AddressForm]", ...args);
+  }
+}
+
 export function AddressForm({ onSave, onCancel, submitLabel }: Props) {
   const [address_line1, setAddress_line1] = useState("");
   const [address_line2, setAddress_line2] = useState("");
@@ -38,13 +45,27 @@ export function AddressForm({ onSave, onCancel, submitLabel }: Props) {
 
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  /** Standardized address waiting for user confirm; modal visible when non-null */
   const [pendingStandardized, setPendingStandardized] =
     useState<StandardizedAddress | null>(null);
+  const showConfirmModal = pendingStandardized !== null;
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setInlineError(null);
     setLoading(true);
+    devLog("validate: submitting", {
+      address_line1,
+      city,
+      state,
+      postal_code,
+      country,
+    });
     try {
       const res = await fetch("/api/validate-address", {
         method: "POST",
@@ -58,16 +79,50 @@ export function AddressForm({ onSave, onCancel, submitLabel }: Props) {
           country,
         }),
       });
-      const data = (await res.json()) as
-        | { valid: true; standardized: StandardizedAddress }
-        | { valid: false; error?: string };
 
-      if (!data.valid) {
-        setInlineError(data.error ?? "Invalid address");
+      devLog("validate: response status", res.status, res.ok);
+
+      let data: unknown;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        devLog("validate: JSON parse failed", parseErr);
+        setInlineError("Invalid response from server.");
         return;
       }
-      setPendingStandardized(data.standardized);
-    } catch {
+
+      devLog("validate: response body", data);
+
+      if (!data || typeof data !== "object" || !("valid" in data)) {
+        setInlineError("Unexpected response from server.");
+        return;
+      }
+
+      const payload = data as {
+        valid: boolean;
+        error?: string;
+        standardized?: StandardizedAddress;
+      };
+
+      if (!payload.valid) {
+        setInlineError(payload.error ?? "Invalid address");
+        devLog("validate: not valid", payload.error);
+        return;
+      }
+
+      if (
+        !payload.standardized ||
+        typeof payload.standardized !== "object"
+      ) {
+        setInlineError("Server did not return a standardized address.");
+        devLog("validate: missing standardized");
+        return;
+      }
+
+      devLog("validate: opening confirm modal", payload.standardized);
+      setPendingStandardized(payload.standardized);
+    } catch (err) {
+      devLog("validate: fetch error", err);
       setInlineError("Could not validate address. Try again.");
     } finally {
       setLoading(false);
@@ -82,8 +137,51 @@ export function AddressForm({ onSave, onCancel, submitLabel }: Props) {
   }
 
   function handleEditAddress() {
+    devLog("confirm: user chose Edit");
     setPendingStandardized(null);
   }
+
+  const modal =
+    mounted && showConfirmModal && pendingStandardized ? (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="addr-confirm-title"
+      >
+        <div className="max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
+          <h2
+            id="addr-confirm-title"
+            className="text-lg font-semibold text-zinc-900 dark:text-zinc-50"
+          >
+            Confirm address
+          </h2>
+          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+            We found this address:{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {formatAddressForDisplay(pendingStandardized)}
+            </span>
+            . Save it?
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleConfirmSave}
+              className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              Confirm
+            </button>
+            <button
+              type="button"
+              onClick={handleEditAddress}
+              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600"
+            >
+              Edit
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null;
 
   return (
     <>
@@ -217,46 +315,7 @@ export function AddressForm({ onSave, onCancel, submitLabel }: Props) {
         </div>
       </form>
 
-      {pendingStandardized ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="addr-confirm-title"
-        >
-          <div className="max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
-            <h2
-              id="addr-confirm-title"
-              className="text-lg font-semibold text-zinc-900 dark:text-zinc-50"
-            >
-              Confirm address
-            </h2>
-            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-              We found this address:{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {formatAddressForDisplay(pendingStandardized)}
-              </span>
-              . Save it?
-            </p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleConfirmSave}
-                className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white dark:bg-zinc-100 dark:text-zinc-900"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                onClick={handleEditAddress}
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-600"
-              >
-                Edit
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {modal ? createPortal(modal, document.body) : null}
     </>
   );
 }

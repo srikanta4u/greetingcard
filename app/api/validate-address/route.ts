@@ -141,6 +141,10 @@ export async function POST(request: Request) {
     country,
   );
 
+  if (process.env.NODE_ENV === "development") {
+    console.log("[validate-address] OK", standardized);
+  }
+
   return NextResponse.json({
     valid: true as const,
     standardized,
