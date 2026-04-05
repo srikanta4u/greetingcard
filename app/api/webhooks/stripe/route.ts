@@ -44,6 +44,24 @@ export async function POST(request: Request) {
         }
         break;
       }
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        if (session.payment_status !== "paid") break;
+        const orderId = session.metadata?.orderId?.trim();
+        if (orderId) {
+          const { error } = await adminClient
+            .from("orders")
+            .update({ status: "paid" })
+            .eq("id", orderId);
+          if (error) {
+            console.error(
+              "[stripe] orders update (checkout.session) failed:",
+              error.message,
+            );
+          }
+        }
+        break;
+      }
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.userId?.trim();

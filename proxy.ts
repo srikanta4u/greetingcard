@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const protectedPrefixes = ["/dashboard", "/creator", "/checkout", "/admin"];
+/** Checkout and order confirmation are public so guests can buy cards. */
+const protectedPrefixes = ["/dashboard", "/creator", "/admin"];
 
 function isProtectedPath(pathname: string) {
   return protectedPrefixes.some(
