@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoutButton } from "./logout-button";
 
@@ -31,8 +32,34 @@ export default async function DashboardPage() {
           Welcome, {displayName}
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          You&apos;re signed in. Use the navigation of your app to continue.
+          You&apos;re signed in. Jump to a section below.
         </p>
+        <nav className="mt-8 flex flex-col gap-2 text-sm">
+          <Link
+            href="/dashboard/contacts"
+            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
+          >
+            Contacts
+          </Link>
+          <Link
+            href="/dashboard/schedule"
+            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
+          >
+            Schedule a card (Pro)
+          </Link>
+          <Link
+            href="/dashboard/upcoming"
+            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
+          >
+            Upcoming scheduled cards
+          </Link>
+          <Link
+            href="/marketplace"
+            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
+          >
+            Marketplace
+          </Link>
+        </nav>
       </main>
     </div>
   );
