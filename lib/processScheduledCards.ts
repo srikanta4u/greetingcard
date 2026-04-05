@@ -1,3 +1,5 @@
+import { sendEmail } from "@/lib/email/send";
+import { cardSkipped } from "@/lib/email/templates";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 export type ProcessScheduledCardsResult = {
@@ -113,6 +115,48 @@ export async function processScheduledCards(): Promise<ProcessScheduledCardsResu
           order_id: order.id,
         });
         if (notifErr) throw notifErr;
+
+        const { data: detail } = await supabase
+          .from("orders")
+          .select("personalization, contact_id")
+          .eq("id", order.id)
+          .maybeSingle();
+        const { data: buyer } = await supabase
+          .from("users")
+          .select("email")
+          .eq("id", order.user_id)
+          .maybeSingle();
+        const emailTo = buyer?.email?.trim();
+        if (emailTo && detail) {
+          const p =
+            detail.personalization &&
+            typeof detail.personalization === "object" &&
+            !Array.isArray(detail.personalization)
+              ? (detail.personalization as Record<string, unknown>)
+              : {};
+          let recipientName = "Recipient";
+          if (detail.contact_id) {
+            const { data: c } = await supabase
+              .from("contacts")
+              .select("name")
+              .eq("id", detail.contact_id)
+              .maybeSingle();
+            if (c?.name?.trim()) recipientName = c.name.trim();
+          }
+          const designTitle =
+            typeof p.designTitle === "string" ? p.designTitle : "Your card";
+          const eventDate =
+            typeof p.eventDeliveryDate === "string"
+              ? p.eventDeliveryDate
+              : "your event";
+          const { subject, html } = cardSkipped({
+            designTitle,
+            recipientName,
+            eventDate,
+          });
+          await sendEmail({ to: emailTo, subject, html });
+        }
+
         skipped += 1;
       } else {
         const { error: upErr } = await supabase

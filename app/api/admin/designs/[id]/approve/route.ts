@@ -1,3 +1,5 @@
+import { sendEmail } from "@/lib/email/send";
+import { designApproved } from "@/lib/email/templates";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
@@ -34,6 +36,16 @@ export async function POST(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
+  const { data: design, error: fetchErr } = await adminClient
+    .from("designs")
+    .select("title, creator_id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (fetchErr || !design) {
+    return NextResponse.json({ error: "Design not found" }, { status: 404 });
+  }
+
   const { error } = await adminClient
     .from("designs")
     .update({ status: "active" })
@@ -45,6 +57,30 @@ export async function POST(_request: Request, context: RouteContext) {
       { error: "Could not update design" },
       { status: 500 },
     );
+  }
+
+  if (design.creator_id) {
+    const { data: creator } = await adminClient
+      .from("creators")
+      .select("user_id")
+      .eq("id", design.creator_id)
+      .maybeSingle();
+    if (creator?.user_id) {
+      const { data: u } = await adminClient
+        .from("users")
+        .select("email")
+        .eq("id", creator.user_id)
+        .maybeSingle();
+      const emailTo = u?.email?.trim();
+      if (emailTo) {
+        const creatorName = emailTo.split("@")[0] || "Creator";
+        const { subject, html } = designApproved({
+          designTitle: design.title,
+          creatorName,
+        });
+        await sendEmail({ to: emailTo, subject, html });
+      }
+    }
   }
 
   return NextResponse.json({ success: true });

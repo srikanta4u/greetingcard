@@ -1,3 +1,5 @@
+import { sendEmail } from "@/lib/email/send";
+import { cardShipped } from "@/lib/email/templates";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
@@ -27,7 +29,7 @@ export async function POST(request: Request) {
 
   const { data: order, error: findErr } = await adminClient
     .from("orders")
-    .select("id, user_id, status")
+    .select("id, user_id, status, personalization, contact_id")
     .eq("print_job_id", printJobId)
     .maybeSingle();
 
@@ -65,6 +67,40 @@ export async function POST(request: Request) {
       });
       if (nErr) {
         console.error("[webhooks/print-vendor] notification", nErr);
+      }
+
+      const { data: buyer } = await adminClient
+        .from("users")
+        .select("email")
+        .eq("id", order.user_id)
+        .maybeSingle();
+      const emailTo = buyer?.email?.trim();
+      if (emailTo) {
+        const p =
+          order.personalization &&
+          typeof order.personalization === "object" &&
+          !Array.isArray(order.personalization)
+            ? (order.personalization as Record<string, unknown>)
+            : {};
+        const designTitle =
+          typeof p.designTitle === "string" ? p.designTitle : "Your card";
+        let recipientName = "Recipient";
+        if (order.contact_id) {
+          const { data: c } = await adminClient
+            .from("contacts")
+            .select("name")
+            .eq("id", order.contact_id)
+            .maybeSingle();
+          if (c?.name?.trim()) recipientName = c.name.trim();
+        }
+        const { subject, html } = cardShipped({
+          designTitle,
+          recipientName,
+          trackingNumber: tracking,
+          carrier,
+          orderId: order.id as string,
+        });
+        await sendEmail({ to: emailTo, subject, html });
       }
     }
 

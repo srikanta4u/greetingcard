@@ -1,3 +1,5 @@
+import { sendEmail } from "@/lib/email/send";
+import { orderConfirmed } from "@/lib/email/templates";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
@@ -199,6 +201,30 @@ export async function POST(request: Request) {
   }
 
   const orderId = orderRow.id as string;
+
+  let recipientName = "Recipient";
+  if (contactId) {
+    const { data: cn } = await adminClient
+      .from("contacts")
+      .select("name")
+      .eq("id", contactId)
+      .maybeSingle();
+    if (cn?.name?.trim()) {
+      recipientName = cn.name.trim();
+    }
+  }
+
+  const buyerEmail = user?.email?.trim() || guestEmailRaw;
+  if (buyerEmail) {
+    const { subject, html } = orderConfirmed({
+      designTitle: design.title,
+      message,
+      recipientName,
+      amount: total,
+      orderId,
+    });
+    await sendEmail({ to: buyerEmail, subject, html });
+  }
 
   /* TODO: Replace with real Stripe Checkout — stripe.checkout.sessions.create */
   const checkoutUrl = `/order-confirmation?mock=true&orderId=${orderId}`;
