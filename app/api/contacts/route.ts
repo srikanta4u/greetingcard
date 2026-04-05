@@ -137,19 +137,22 @@ export async function POST(request: Request) {
     );
   }
 
+  // Insert columns must match public.contacts (see supabase/sql/contacts_setup.sql)
+  const insertRow = {
+    user_id: user.id,
+    name,
+    relationship: relationship || null,
+    address_line1,
+    address_line2,
+    city,
+    state,
+    postal_code,
+    country,
+  };
+
   const { data: row, error } = await supabase
     .from("contacts")
-    .insert({
-      user_id: user.id,
-      name,
-      relationship: relationship || null,
-      address_line1,
-      address_line2,
-      city,
-      state,
-      postal_code,
-      country,
-    })
+    .insert(insertRow)
     .select(
       `
       id,
@@ -173,9 +176,13 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    console.error("[contacts POST]", error);
+    console.error("[contacts POST]", error.message, error.code, error.details);
     return NextResponse.json(
-      { error: "Could not create contact" },
+      {
+        error: "Could not create contact",
+        details: error.message,
+        code: error.code,
+      },
       { status: 500 },
     );
   }

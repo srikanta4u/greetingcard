@@ -134,10 +134,17 @@ export function ContactsClient({
           ...address,
         }),
       });
-      const data = (await res.json()) as { error?: string; contact?: ContactRow };
+      const data = (await res.json()) as {
+        error?: string;
+        details?: string;
+        contact?: ContactRow;
+      };
 
       if (!res.ok) {
-        setAddError(data.error ?? "Could not save contact");
+        const msg = data.details
+          ? `${data.error ?? "Could not save contact"}: ${data.details}`
+          : (data.error ?? "Could not save contact");
+        setAddError(msg);
         return;
       }
       if (data.contact) {
