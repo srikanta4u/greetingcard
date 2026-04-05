@@ -22,6 +22,25 @@ function parseDispatchStart(dateStr: string | null | undefined): Date | null {
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 0, 0, 0, 0);
 }
 
+function startOfToday(): Date {
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+}
+
+function daysUntilDispatch(dateStr: string | null | undefined): number | null {
+  const d = parseDispatchStart(dateStr);
+  if (!d) return null;
+  return Math.round((d.getTime() - startOfToday().getTime()) / 86400000);
+}
+
+function dispatchCountdownLabel(days: number | null): string | null {
+  if (days === null) return null;
+  if (days < 0) return "Dispatch date passed";
+  if (days === 0) return "Dispatches today";
+  if (days === 1) return "Dispatches in 1 day";
+  return `Dispatches in ${days} days`;
+}
+
 function canCancelOrder(scheduledSendDate: string | null | undefined): boolean {
   const dispatch = parseDispatchStart(scheduledSendDate);
   if (!dispatch) return false;
@@ -84,16 +103,17 @@ export function UpcomingOrdersClient({
 
   if (orders.length === 0) {
     return (
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        No upcoming scheduled cards.{" "}
+      <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-6 py-12 text-center dark:border-zinc-700 dark:bg-zinc-900">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          No scheduled cards. Schedule one now!
+        </p>
         <Link
           href="/dashboard/schedule"
-          className="font-medium text-violet-600 underline-offset-2 hover:underline dark:text-violet-400"
+          className="mt-4 inline-flex rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-500"
         >
-          Schedule one
+          Schedule a card
         </Link>
-        .
-      </p>
+      </div>
     );
   }
 
@@ -110,6 +130,8 @@ export function UpcomingOrdersClient({
           const contactName = o.contacts?.name ?? "Contact";
           const eventIso = eventDateFromPersonalization(o.personalization);
           const cancellable = canCancelOrder(o.scheduled_send_date);
+          const daysLeft = daysUntilDispatch(o.scheduled_send_date);
+          const countdown = dispatchCountdownLabel(daysLeft);
           return (
             <li
               key={o.id}
@@ -153,25 +175,40 @@ export function UpcomingOrdersClient({
                       </dd>
                     </div>
                   </dl>
+                  {countdown ? (
+                    <p className="mt-2 text-sm font-medium text-violet-600 dark:text-violet-400">
+                      {countdown}
+                    </p>
+                  ) : null}
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">
-                <span className="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200">
+              <div className="flex shrink-0 flex-col items-stretch gap-2 sm:items-end">
+                <span className="inline-flex self-start rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200 sm:self-end">
                   Scheduled
                 </span>
-                <button
-                  type="button"
-                  disabled={!cancellable || busyId === o.id}
-                  title={
-                    cancellable
-                      ? "Cancel this order"
-                      : "Cannot cancel within 72 hours of dispatch"
-                  }
-                  onClick={() => void handleCancel(o.id)}
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition enabled:hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-300 dark:enabled:hover:bg-zinc-800"
-                >
-                  {busyId === o.id ? "Cancelling…" : "Cancel"}
-                </button>
+                <div className="group relative self-start sm:self-end">
+                  <button
+                    type="button"
+                    disabled={!cancellable || busyId === o.id}
+                    title={
+                      cancellable
+                        ? "Cancel this order"
+                        : "Cannot cancel within 72 hours of dispatch"
+                    }
+                    onClick={() => void handleCancel(o.id)}
+                    className="w-full rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 transition enabled:hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-600 dark:text-zinc-300 dark:enabled:hover:bg-zinc-800 sm:w-auto"
+                  >
+                    {busyId === o.id ? "Cancelling…" : "Cancel"}
+                  </button>
+                  {!cancellable ? (
+                    <span
+                      role="tooltip"
+                      className="pointer-events-none absolute right-0 top-full z-10 mt-1 w-56 rounded-lg border border-zinc-200 bg-zinc-900 px-2 py-1.5 text-left text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 dark:border-zinc-600 dark:bg-zinc-800"
+                    >
+                      Cannot cancel within 72 hours of dispatch
+                    </span>
+                  ) : null}
+                </div>
               </div>
             </li>
           );

@@ -1,7 +1,45 @@
+import {
+  DashboardHomeClient,
+  type DashboardHomeRecentOrder,
+  type DashboardHomeUpcomingEvent,
+} from "@/components/dashboard/DashboardHomeClient";
+import {
+  getUpcomingEventsInWindow,
+  type ContactWithEventsInput,
+} from "@/lib/dashboard/upcomingEvents";
 import { createClient } from "@/lib/supabase/server";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogoutButton } from "./logout-button";
+
+function one<T>(v: T | T[] | null | undefined): T | null {
+  if (v == null) return null;
+  return Array.isArray(v) ? (v[0] ?? null) : v;
+}
+
+function designTitleFromRow(row: {
+  designs: { title: string } | null;
+  personalization: unknown;
+}): string {
+  if (row.designs?.title) return row.designs.title;
+  const p = row.personalization;
+  if (p && typeof p === "object" && !Array.isArray(p)) {
+    const t = (p as Record<string, unknown>).designTitle;
+    if (typeof t === "string") return t;
+  }
+  return "Card";
+}
+
+function frontImageFromRow(row: {
+  designs: { front_image_url: string } | null;
+  personalization: unknown;
+}): string | null {
+  if (row.designs?.front_image_url) return row.designs.front_image_url;
+  const p = row.personalization;
+  if (p && typeof p === "object" && !Array.isArray(p)) {
+    const u = (p as Record<string, unknown>).frontImageUrl;
+    if (typeof u === "string") return u;
+  }
+  return null;
+}
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -10,57 +48,144 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect("/auth/login?redirectTo=/dashboard");
   }
 
   const meta = user.user_metadata as { full_name?: string } | undefined;
-  const nameFromMeta = meta?.full_name?.trim();
-  const displayName = nameFromMeta || user.email || "there";
+  const displayName =
+    meta?.full_name?.trim() || user.email?.split("@")[0] || "there";
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("subscription_active")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const subscriptionActive = Boolean(profile?.subscription_active);
+
+  const { data: contactRows, error: contactsErr } = await supabase
+    .from("contacts")
+    .select(
+      `
+      id,
+      name,
+      contact_events (
+        id,
+        event_type,
+        event_date,
+        recurs_annually
+      )
+    `,
+    )
+    .eq("user_id", user.id)
+    .is("deleted_at", null);
+
+  if (contactsErr) {
+    console.error("[dashboard] contacts", contactsErr);
+  }
+
+  const upcomingWindow = getUpcomingEventsInWindow(
+    (contactRows ?? []) as ContactWithEventsInput[],
+    30,
+  );
+
+  const upcomingEvents: DashboardHomeUpcomingEvent[] = upcomingWindow.map(
+    (e) => ({
+      contactId: e.contactId,
+      contactName: e.contactName,
+      eventId: e.eventId,
+      eventType: e.eventType,
+      occurrenceYmd: e.occurrenceYmd,
+      daysUntil: e.daysUntil,
+    }),
+  );
+
+  const { count: scheduledCount, error: schedErr } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("status", "scheduled");
+
+  if (schedErr) {
+    console.error("[dashboard] scheduled count", schedErr);
+  }
+
+  const { count: totalOrdersCount, error: totalErr } = await supabase
+    .from("orders")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", user.id);
+
+  if (totalErr) {
+    console.error("[dashboard] total orders", totalErr);
+  }
+
+  const { data: recentRows, error: recentErr } = await supabase
+    .from("orders")
+    .select(
+      `
+      id,
+      status,
+      amount_charged,
+      created_at,
+      personalization,
+      designs ( title, front_image_url ),
+      contacts ( name )
+    `,
+    )
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(5);
+
+  if (recentErr) {
+    console.error("[dashboard] recent orders", recentErr);
+  }
+
+  const recentOrders: DashboardHomeRecentOrder[] = (recentRows ?? []).map(
+    (raw) => {
+      const row = raw as {
+        id: string;
+        status: string;
+        amount_charged: number | null;
+        created_at: string | null;
+        personalization: unknown;
+        designs:
+          | { title: string; front_image_url: string }
+          | { title: string; front_image_url: string }[]
+          | null;
+        contacts: unknown;
+      };
+      const d = one(row.designs);
+      return {
+        id: row.id,
+        status: row.status,
+        amountCharged:
+          typeof row.amount_charged === "number"
+            ? row.amount_charged
+            : row.amount_charged != null
+              ? Number(row.amount_charged)
+              : null,
+        createdAt: row.created_at,
+        designTitle: designTitleFromRow({
+          designs: d ? { title: d.title } : null,
+          personalization: row.personalization,
+        }),
+        frontImageUrl: frontImageFromRow({
+          designs: d ? { front_image_url: d.front_image_url } : null,
+          personalization: row.personalization,
+        }),
+      };
+    },
+  );
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-zinc-50 dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-          <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            Dashboard
-          </span>
-          <LogoutButton />
-        </div>
-      </header>
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 py-12 sm:px-6">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-          Welcome, {displayName}
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          You&apos;re signed in. Jump to a section below.
-        </p>
-        <nav className="mt-8 flex flex-col gap-2 text-sm">
-          <Link
-            href="/dashboard/contacts"
-            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
-          >
-            Contacts
-          </Link>
-          <Link
-            href="/dashboard/schedule"
-            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
-          >
-            Schedule a card (Pro)
-          </Link>
-          <Link
-            href="/dashboard/upcoming"
-            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
-          >
-            Upcoming scheduled cards
-          </Link>
-          <Link
-            href="/marketplace"
-            className="font-medium text-violet-600 underline-offset-4 hover:underline dark:text-violet-400"
-          >
-            Marketplace
-          </Link>
-        </nav>
-      </main>
-    </div>
+    <DashboardHomeClient
+      displayName={displayName}
+      subscriptionActive={subscriptionActive}
+      upcomingEventsCount={upcomingEvents.length}
+      scheduledPendingCount={scheduledCount ?? 0}
+      totalOrdersCount={totalOrdersCount ?? 0}
+      upcomingEvents={upcomingEvents}
+      recentOrders={recentOrders}
+    />
   );
 }

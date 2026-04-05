@@ -274,56 +274,35 @@ export default function SchedulePage() {
 
   if (!subscriptionActive) {
     return (
-      <div className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-        <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
-            >
-              ← Dashboard
-            </Link>
-          </div>
-        </header>
-        <main className="mx-auto max-w-lg px-4 py-16 text-center sm:px-6">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-            Schedule cards with Pro
-          </h1>
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-            Scheduled sending for birthdays and anniversaries is included with
-            an active AutoCard Pro subscription.
-          </p>
-          <Link
-            href="/pricing"
-            className="mt-8 inline-flex rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500"
-          >
-            View plans
-          </Link>
-        </main>
+      <div className="mx-auto max-w-lg py-4 text-center sm:py-8">
+        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+          Schedule cards with Pro
+        </h1>
+        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+          Scheduled sending for birthdays and anniversaries is included with
+          an active AutoCard Pro subscription.
+        </p>
+        <Link
+          href="/pricing"
+          className="mt-8 inline-flex rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-500"
+        >
+          View plans
+        </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
-            >
-              ← Dashboard
-            </Link>
-            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              Schedule a card
-            </span>
-          </div>
-        </div>
-      </header>
+    <div className="mx-auto max-w-3xl">
+      <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        Schedule a card
+      </h1>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        Pick a contact, event, design, and message. We&apos;ll dispatch on time
+        for Pro subscribers.
+      </p>
 
-      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-        <div className="mb-8 flex flex-wrap gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="mb-8 mt-8 flex flex-wrap gap-2 text-xs font-medium text-zinc-500 dark:text-zinc-400">
           {[1, 2, 3, 4, 5].map((n) => (
             <span
               key={n}
@@ -718,7 +697,6 @@ export default function SchedulePage() {
               </button>
             </section>
           )}
-      </main>
     </div>
   );
 }
