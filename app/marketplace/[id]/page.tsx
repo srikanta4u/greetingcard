@@ -3,7 +3,33 @@ import {
   type DesignCustomizerDesign,
 } from "@/components/marketplace/DesignCustomizer";
 import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("designs")
+    .select("title")
+    .eq("id", id)
+    .eq("status", "active")
+    .maybeSingle();
+
+  const title =
+    typeof data?.title === "string" && data.title.trim()
+      ? data.title.trim()
+      : "Greeting card";
+
+  return {
+    title,
+    description: `Send a personalized ${title} greeting card. Choose your message, font, and color.`,
+  };
+}
 
 export default async function MarketplaceDesignPage({
   params,

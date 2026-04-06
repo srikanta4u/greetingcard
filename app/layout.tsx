@@ -17,12 +17,37 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://autocard.com"),
   title: {
-    default: "AutoCard — Greeting cards, sent automatically",
-    template: "%s · AutoCard",
+    default: "AutoCard — Never miss a moment that matters",
+    template: "%s | AutoCard",
   },
   description:
-    "Beautiful, personalized greeting cards sent automatically. Never miss a birthday or milestone.",
+    "AutoCard sends beautiful, personalized greeting cards automatically. Browse creator designs, schedule cards for birthdays and anniversaries, and never miss an important moment.",
+  keywords: [
+    "greeting cards",
+    "birthday cards",
+    "anniversary cards",
+    "automated cards",
+    "personalized cards",
+    "card marketplace",
+  ],
+  openGraph: {
+    title: "AutoCard — Never miss a moment that matters",
+    description: "Beautiful greeting cards, sent automatically.",
+    url: "https://autocard.com",
+    siteName: "AutoCard",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AutoCard — Never miss a moment that matters",
+    description: "Beautiful greeting cards, sent automatically.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function RootLayout({

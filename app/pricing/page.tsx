@@ -1,5 +1,12 @@
 import { PricingPlanSection } from "@/components/pricing/PricingPlanSection";
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Free plan available. Upgrade to AutoCard Pro for $10/month to unlock automated scheduling and unlimited contacts.",
+};
 
 const FAQ = [
   {

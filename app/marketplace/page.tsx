@@ -2,8 +2,15 @@ import { DesignCard, type MarketplaceDesign } from "@/components/marketplace/Des
 import { FilterSidebar } from "@/components/marketplace/FilterSidebar";
 import { SearchBar } from "@/components/marketplace/SearchBar";
 import { createClient } from "@/lib/supabase/server";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+
+export const metadata: Metadata = {
+  title: "Browse Greeting Cards",
+  description:
+    "Shop hundreds of unique greeting card designs from independent creators. Birthday, anniversary, thank you cards and more.",
+};
 
 const PAGE_SIZE = 24;
 
