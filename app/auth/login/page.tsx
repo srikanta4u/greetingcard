@@ -125,10 +125,10 @@ function LoginForm() {
                 className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 shadow-sm outline-none ring-zinc-400 transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20"
                 placeholder="••••••••"
               />
-              <div className="mt-2 text-right">
+              <div className="text-right mt-1">
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm font-medium text-zinc-600 underline-offset-4 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+                  className="text-sm text-purple-600 hover:underline"
                 >
                   Forgot password?
                 </Link>
