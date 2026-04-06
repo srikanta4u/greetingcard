@@ -61,6 +61,7 @@ export function ProUpgradeCta({
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           billing: yearly ? "yearly" : "monthly",

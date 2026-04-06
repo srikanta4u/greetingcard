@@ -1,6 +1,8 @@
-import { apiError } from "@/lib/apiError";
-import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
+import {
+  createRouteHandlerClient,
+  mergeRouteHandlerCookies,
+} from "@/lib/supabase/route-handler";
+import { NextResponse, type NextRequest } from "next/server";
 import { stripe } from "@/lib/stripe";
 
 type CheckoutBody = {
@@ -16,25 +18,33 @@ function isSubscriptionPrice(priceId: string) {
   return priceId === monthly || priceId === yearly;
 }
 
-export async function POST(request: Request) {
-  const supabase = await createClient();
+export async function POST(request: NextRequest) {
+  const { supabase, response: cookieResponse } = createRouteHandlerClient(
+    request,
+  );
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const json = (body: object, status: number) =>
+    mergeRouteHandlerCookies(
+      cookieResponse,
+      NextResponse.json(body, { status }),
+    );
+
   if (!user) {
-    return apiError("Unauthorized", 401);
+    return json({ error: "Unauthorized" }, 401);
   }
 
   let body: CheckoutBody;
   try {
     body = (await request.json()) as CheckoutBody;
   } catch {
-    return apiError("Invalid JSON body", 400);
+    return json({ error: "Invalid JSON body" }, 400);
   }
 
   if (body.userId && body.userId !== user.id) {
-    return apiError("Forbidden", 403);
+    return json({ error: "Forbidden" }, 403);
   }
 
   const { orderId, billing } = body;
@@ -46,20 +56,23 @@ export async function POST(request: Request) {
         ? process.env.STRIPE_PRO_MONTHLY_PRICE_ID?.trim()
         : process.env.STRIPE_PRO_YEARLY_PRICE_ID?.trim();
     if (!priceId) {
-      return apiError(
-        "Stripe Pro price IDs are not configured (STRIPE_PRO_MONTHLY_PRICE_ID / STRIPE_PRO_YEARLY_PRICE_ID)",
+      return json(
+        {
+          error:
+            "Stripe Pro price IDs are not configured (STRIPE_PRO_MONTHLY_PRICE_ID / STRIPE_PRO_YEARLY_PRICE_ID)",
+        },
         500,
       );
     }
   } else if (!priceId || typeof priceId !== "string") {
-    return apiError("priceId or billing is required", 400);
+    return json({ error: "priceId or billing is required" }, 400);
   }
 
   const userId = user.id;
 
   const baseUrl = process.env.NEXT_PUBLIC_URL?.trim();
   if (!baseUrl) {
-    return apiError("NEXT_PUBLIC_URL is not configured", 500);
+    return json({ error: "NEXT_PUBLIC_URL is not configured" }, 500);
   }
 
   const base = baseUrl.replace(/\/$/, "");
@@ -101,14 +114,14 @@ export async function POST(request: Request) {
     });
 
     if (!session.url) {
-      return apiError("Checkout session did not return a URL", 500);
+      return json({ error: "Checkout session did not return a URL" }, 500);
     }
 
-    return NextResponse.json({ url: session.url });
+    return json({ url: session.url }, 200);
   } catch (err) {
     const message =
       err instanceof Error ? err.message : "Failed to create checkout session";
     console.error("[stripe] checkout.sessions.create:", err);
-    return apiError(message, 502);
+    return json({ error: message }, 502);
   }
 }
