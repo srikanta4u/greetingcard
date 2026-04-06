@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { GetStartedFreeCta } from "@/components/pricing/GetStartedFreeCta";
+import { ProUpgradeCta } from "@/components/pricing/ProUpgradeCta";
 import { useState } from "react";
 
 const MONTHLY = 10;
@@ -120,12 +121,7 @@ export function PricingPlanSection() {
                 Up to 3 saved contacts
               </li>
             </ul>
-            <Link
-              href="/auth/signup"
-              className="mt-8 flex min-h-11 w-full items-center justify-center rounded-xl border-2 border-violet-200 bg-white py-3 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 dark:border-violet-800 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/50"
-            >
-              Get started free
-            </Link>
+            <GetStartedFreeCta />
           </div>
 
           <div className="relative bg-gradient-to-b from-violet-50 to-white p-8 dark:from-violet-950/40 dark:to-zinc-900">
@@ -163,12 +159,7 @@ export function PricingPlanSection() {
                 Priority support
               </li>
             </ul>
-            <Link
-              href="/dashboard"
-              className="mt-8 flex min-h-11 w-full items-center justify-center rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/30 transition hover:bg-violet-500"
-            >
-              Upgrade to Pro
-            </Link>
+            <ProUpgradeCta yearly={yearly} variant="card" />
           </div>
         </div>
 

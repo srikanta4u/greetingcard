@@ -1,6 +1,6 @@
+import { PricingPageFooterCtas } from "@/components/pricing/PricingPageFooterCtas";
 import { PricingPlanSection } from "@/components/pricing/PricingPlanSection";
 import type { Metadata } from "next";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Pricing | AutoCard",
@@ -80,20 +80,7 @@ export default function PricingPage() {
               </details>
             ))}
           </div>
-          <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
-              href="/auth/signup"
-              className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl border-2 border-violet-200 bg-white px-6 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 sm:w-auto sm:min-w-[200px] dark:border-violet-800 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/50"
-            >
-              Get started free
-            </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 sm:w-auto sm:min-w-[200px]"
-            >
-              Upgrade to Pro
-            </Link>
-          </div>
+          <PricingPageFooterCtas />
         </div>
       </section>
     </div>

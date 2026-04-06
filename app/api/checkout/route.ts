@@ -1,11 +1,13 @@
 import { apiError } from "@/lib/apiError";
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 
 type CheckoutBody = {
-  priceId: string;
-  userId: string;
+  priceId?: string;
+  userId?: string;
   orderId?: string;
+  billing?: "monthly" | "yearly";
 };
 
 function isSubscriptionPrice(priceId: string) {
@@ -15,6 +17,15 @@ function isSubscriptionPrice(priceId: string) {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return apiError("Unauthorized", 401);
+  }
+
   let body: CheckoutBody;
   try {
     body = (await request.json()) as CheckoutBody;
@@ -22,18 +33,36 @@ export async function POST(request: Request) {
     return apiError("Invalid JSON body", 400);
   }
 
-  const { priceId, userId, orderId } = body;
-  if (!priceId || typeof priceId !== "string") {
-    return apiError("priceId is required", 400);
-  }
-  if (!userId || typeof userId !== "string") {
-    return apiError("userId is required", 400);
+  if (body.userId && body.userId !== user.id) {
+    return apiError("Forbidden", 403);
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_URL;
+  const { orderId, billing } = body;
+  let priceId = body.priceId;
+
+  if (billing === "monthly" || billing === "yearly") {
+    priceId =
+      billing === "monthly"
+        ? process.env.STRIPE_PRO_MONTHLY_PRICE_ID?.trim()
+        : process.env.STRIPE_PRO_YEARLY_PRICE_ID?.trim();
+    if (!priceId) {
+      return apiError(
+        "Stripe Pro price IDs are not configured (STRIPE_PRO_MONTHLY_PRICE_ID / STRIPE_PRO_YEARLY_PRICE_ID)",
+        500,
+      );
+    }
+  } else if (!priceId || typeof priceId !== "string") {
+    return apiError("priceId or billing is required", 400);
+  }
+
+  const userId = user.id;
+
+  const baseUrl = process.env.NEXT_PUBLIC_URL?.trim();
   if (!baseUrl) {
     return apiError("NEXT_PUBLIC_URL is not configured", 500);
   }
+
+  const base = baseUrl.replace(/\/$/, "");
 
   const mode = isSubscriptionPrice(priceId) ? "subscription" : "payment";
 
@@ -43,12 +72,19 @@ export async function POST(request: Request) {
     userId,
   };
 
+  const successUrl =
+    mode === "subscription"
+      ? `${base}/dashboard?upgraded=true`
+      : `${base}/dashboard/orders?success=true`;
+  const cancelUrl =
+    mode === "subscription" ? `${base}/pricing` : `${base}/marketplace`;
+
   try {
     const session = await stripe.checkout.sessions.create({
       mode,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${baseUrl.replace(/\/$/, "")}/dashboard/orders?success=true`,
-      cancel_url: `${baseUrl.replace(/\/$/, "")}/marketplace`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       automatic_tax: { enabled: true },
       metadata,
       ...(mode === "subscription"
