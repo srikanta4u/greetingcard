@@ -51,6 +51,7 @@ export async function POST(request: Request) {
         status: "shipped",
         tracking_number: tracking || null,
         carrier: carrier || null,
+        shipped_at: new Date().toISOString(),
       })
       .eq("id", order.id);
 
