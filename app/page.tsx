@@ -1,6 +1,36 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 const VIOLET = "#7c3aed";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: "AutoCard — Automated Greeting Cards for Every Occasion",
+  },
+  description:
+    "AutoCard sends personalized greeting cards automatically — birthdays, anniversaries, and more. Never miss a moment that matters.",
+  openGraph: {
+    title: "AutoCard — Automated Greeting Cards for Every Occasion",
+    description:
+      "Beautiful, personalized cards from independent creators — sent on your schedule so you never miss a moment that matters.",
+    type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AutoCard — greeting cards sent automatically",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AutoCard — Automated Greeting Cards for Every Occasion",
+    description:
+      "Beautiful, personalized cards — sent automatically for birthdays, anniversaries, and more.",
+    images: ["/og-image.png"],
+  },
+};
 
 export default function HomePage() {
   return (

@@ -16,33 +16,41 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl =
+  process.env.NEXT_PUBLIC_URL || "https://greetingcard-sodw.vercel.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://autocard.com"),
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "AutoCard — Never miss a moment that matters",
+    default: "AutoCard | Send Beautiful Greeting Cards Automatically",
     template: "%s | AutoCard",
   },
   description:
-    "AutoCard sends beautiful, personalized greeting cards automatically. Browse creator designs, schedule cards for birthdays and anniversaries, and never miss an important moment.",
+    "AutoCard sends personalized greeting cards automatically — birthdays, anniversaries, and more. Never miss a moment that matters.",
   keywords: [
     "greeting cards",
+    "automated greeting cards",
     "birthday cards",
     "anniversary cards",
-    "automated cards",
     "personalized cards",
     "card marketplace",
+    "scheduled cards",
+    "AutoCard",
   ],
   openGraph: {
-    title: "AutoCard — Never miss a moment that matters",
-    description: "Beautiful greeting cards, sent automatically.",
-    url: "https://autocard.com",
+    title: "AutoCard | Send Beautiful Greeting Cards Automatically",
+    description:
+      "AutoCard sends personalized greeting cards automatically — birthdays, anniversaries, and more. Never miss a moment that matters.",
+    url: siteUrl,
     siteName: "AutoCard",
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AutoCard — Never miss a moment that matters",
-    description: "Beautiful greeting cards, sent automatically.",
+    title: "AutoCard | Send Beautiful Greeting Cards Automatically",
+    description:
+      "Personalized greeting cards sent automatically. Birthdays, anniversaries, and more.",
   },
   robots: {
     index: true,

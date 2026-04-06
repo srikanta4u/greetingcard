@@ -3,9 +3,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Pricing",
+  title: "Pricing | AutoCard",
   description:
-    "Free plan available. Upgrade to AutoCard Pro for $10/month to unlock automated scheduling and unlimited contacts.",
+    "Simple pricing for AutoCard. Free plan available. Upgrade to Pro for scheduled sends and unlimited contacts.",
+  openGraph: {
+    title: "Pricing | AutoCard",
+    description:
+      "Simple pricing for AutoCard. Free plan available. Upgrade to Pro for scheduled sends and unlimited contacts.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pricing | AutoCard",
+    description:
+      "Free and Pro plans — automated scheduling, unlimited contacts on Pro.",
+  },
 };
 
 const FAQ = [

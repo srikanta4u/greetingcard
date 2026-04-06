@@ -6,6 +6,14 @@ import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+function occasionPhrase(tags: unknown): string {
+  if (!Array.isArray(tags)) return "";
+  const labels = tags.filter((t): t is string => typeof t === "string" && t.trim());
+  if (labels.length === 0) return "";
+  if (labels.length === 1) return ` Perfect for ${labels[0]}.`;
+  return ` Great for ${labels.slice(0, 3).join(", ")}.`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -15,7 +23,7 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data } = await supabase
     .from("designs")
-    .select("title")
+    .select("title, front_image_url, tags_occasion")
     .eq("id", id)
     .eq("status", "active")
     .maybeSingle();
@@ -25,9 +33,28 @@ export async function generateMetadata({
       ? data.title.trim()
       : "Greeting card";
 
+  const baseDescription = `Send a personalized ${title} greeting card. Choose your message, font, and color.${occasionPhrase(data?.tags_occasion)}`;
+
+  const images =
+    typeof data?.front_image_url === "string" && data.front_image_url.trim()
+      ? [{ url: data.front_image_url.trim(), alt: title }]
+      : undefined;
+
   return {
     title,
-    description: `Send a personalized ${title} greeting card. Choose your message, font, and color.`,
+    description: baseDescription,
+    openGraph: {
+      title: `${title} | AutoCard`,
+      description: baseDescription,
+      type: "website",
+      images,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | AutoCard`,
+      description: baseDescription,
+      images: images?.map((i) => i.url),
+    },
   };
 }
 

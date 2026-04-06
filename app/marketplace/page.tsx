@@ -7,9 +7,21 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-  title: "Browse Greeting Cards",
+  title: "Browse Greeting Cards | AutoCard Marketplace",
   description:
-    "Shop hundreds of unique greeting card designs from independent creators. Birthday, anniversary, thank you cards and more.",
+    "Discover unique greeting cards from independent creators. Filter by occasion, tone, and recipient.",
+  openGraph: {
+    title: "Browse Greeting Cards | AutoCard Marketplace",
+    description:
+      "Discover unique greeting cards from independent creators. Filter by occasion, tone, and recipient.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Browse Greeting Cards | AutoCard Marketplace",
+    description:
+      "Unique cards for birthdays, anniversaries, thank-yous, and more.",
+  },
 };
 
 const PAGE_SIZE = 24;
