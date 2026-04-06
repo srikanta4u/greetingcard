@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/supabase/admin";
 import {
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as Body;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const supabase = await createClient();
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { data: profile } = await supabase
@@ -60,10 +61,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (!profile?.subscription_active) {
-    return NextResponse.json(
-      { error: "Pro subscription required to schedule cards" },
-      { status: 403 },
-    );
+    return apiError("Pro subscription required to schedule cards", 403);
   }
 
   const designId =
@@ -80,17 +78,14 @@ export async function POST(request: Request) {
       : null;
 
   if (!designId || !contactId || !contactEventId) {
-    return NextResponse.json(
-      { error: "designId, contactId, and contactEventId are required" },
-      { status: 400 },
+    return apiError(
+      "designId, contactId, and contactEventId are required",
+      400,
     );
   }
 
   if (!isPersonalization(body.personalization)) {
-    return NextResponse.json(
-      { error: "personalization object is required" },
-      { status: 400 },
-    );
+    return apiError("personalization object is required", 400);
   }
 
   const p = body.personalization;
@@ -105,7 +100,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (contactErr || !contact || contact.user_id !== user.id) {
-    return NextResponse.json({ error: "Invalid contact" }, { status: 400 });
+    return apiError("Invalid contact", 400);
   }
 
   const { data: ev, error: evErr } = await adminClient
@@ -115,9 +110,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (evErr || !ev || ev.contact_id !== contactId) {
-    return NextResponse.json({ error: "Invalid event for this contact" }, {
-      status: 400,
-    });
+    return apiError("Invalid event for this contact", 400);
   }
 
   const eventDay = parseEventDate(ev.event_date);
@@ -133,10 +126,7 @@ export async function POST(request: Request) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (deliveryDate < today) {
-      return NextResponse.json(
-        { error: "This event date has already passed" },
-        { status: 400 },
-      );
+      return apiError("This event date has already passed", 400);
     }
   }
 
@@ -152,7 +142,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (designErr || !design) {
-    return NextResponse.json({ error: "Design not found" }, { status: 404 });
+    return apiError("Design not found", 404);
   }
 
   const personalization = {
@@ -183,10 +173,7 @@ export async function POST(request: Request) {
 
   if (insertError || !orderRow) {
     console.error("[orders/scheduled] insert", insertError);
-    return NextResponse.json(
-      { error: "Could not create scheduled order" },
-      { status: 500 },
-    );
+    return apiError("Could not create scheduled order", 500);
   }
 
   const orderId = orderRow.id as string;

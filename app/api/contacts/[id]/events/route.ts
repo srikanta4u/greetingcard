@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -39,16 +40,13 @@ type RouteCtx = { params: Promise<{ id: string }> };
 export async function GET(_request: Request, context: RouteCtx) {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { id: contactId } = await context.params;
   const owned = await assertContactOwner(supabase, user.id, contactId);
   if (!owned.ok) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: owned.status },
-    );
+    return apiError("Not found", owned.status);
   }
 
   const { data, error } = await supabase
@@ -59,10 +57,7 @@ export async function GET(_request: Request, context: RouteCtx) {
 
   if (error) {
     console.error("[contact_events GET]", error);
-    return NextResponse.json(
-      { error: "Could not load events" },
-      { status: 500 },
-    );
+    return apiError("Could not load events", 500);
   }
 
   return NextResponse.json({ events: data ?? [] });
@@ -86,23 +81,20 @@ const EVENT_TYPES = new Set([
 export async function POST(request: Request, context: RouteCtx) {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { id: contactId } = await context.params;
   const owned = await assertContactOwner(supabase, user.id, contactId);
   if (!owned.ok) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: owned.status },
-    );
+    return apiError("Not found", owned.status);
   }
 
   let body: PostBody;
   try {
     body = (await request.json()) as PostBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const event_type =
@@ -112,16 +104,10 @@ export async function POST(request: Request, context: RouteCtx) {
   const recurs_annually = body.recurs_annually === true;
 
   if (!event_type || !EVENT_TYPES.has(event_type)) {
-    return NextResponse.json(
-      { error: "Invalid event type" },
-      { status: 400 },
-    );
+    return apiError("Invalid event type", 400);
   }
   if (!event_date || !/^\d{4}-\d{2}-\d{2}$/.test(event_date)) {
-    return NextResponse.json(
-      { error: "event_date must be YYYY-MM-DD" },
-      { status: 400 },
-    );
+    return apiError("event_date must be YYYY-MM-DD", 400);
   }
 
   const { data, error } = await supabase
@@ -137,10 +123,7 @@ export async function POST(request: Request, context: RouteCtx) {
 
   if (error) {
     console.error("[contact_events POST]", error);
-    return NextResponse.json(
-      { error: "Could not create event" },
-      { status: 500 },
-    );
+    return apiError("Could not create event", 500);
   }
 
   return NextResponse.json({ event: data });

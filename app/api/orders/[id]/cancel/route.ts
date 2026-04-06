@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
@@ -19,7 +20,7 @@ function parseScheduledDate(value: string | null | undefined): Date | null {
 export async function POST(_request: Request, context: Ctx) {
   const { id: orderId } = await context.params;
   if (!orderId?.trim()) {
-    return NextResponse.json({ error: "Invalid order id" }, { status: 400 });
+    return apiError("Invalid order id", 400);
   }
 
   const supabase = await createClient();
@@ -27,7 +28,7 @@ export async function POST(_request: Request, context: Ctx) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { data: order, error: fetchErr } = await adminClient
@@ -37,34 +38,25 @@ export async function POST(_request: Request, context: Ctx) {
     .maybeSingle();
 
   if (fetchErr || !order) {
-    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    return apiError("Order not found", 404);
   }
 
   if (order.user_id !== user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return apiError("Forbidden", 403);
   }
 
   if (order.status !== "scheduled") {
-    return NextResponse.json(
-      { error: "Only scheduled orders can be cancelled this way" },
-      { status: 400 },
-    );
+    return apiError("Only scheduled orders can be cancelled this way", 400);
   }
 
   const dispatch = parseScheduledDate(order.scheduled_send_date as string);
   if (!dispatch) {
-    return NextResponse.json(
-      { error: "Order has no valid dispatch date" },
-      { status: 400 },
-    );
+    return apiError("Order has no valid dispatch date", 400);
   }
 
   const cutoff = new Date(Date.now() + SEVENTY_TWO_H_MS);
   if (dispatch.getTime() <= cutoff.getTime()) {
-    return NextResponse.json(
-      { error: "Cannot cancel within 72 hours of dispatch" },
-      { status: 400 },
-    );
+    return apiError("Cannot cancel within 72 hours of dispatch", 400);
   }
 
   const { error: updateErr } = await adminClient
@@ -75,9 +67,7 @@ export async function POST(_request: Request, context: Ctx) {
 
   if (updateErr) {
     console.error("[orders/cancel] update", updateErr);
-    return NextResponse.json({ error: "Could not cancel order" }, {
-      status: 500,
-    });
+    return apiError("Could not cancel order", 500);
   }
 
   return NextResponse.json({ success: true });

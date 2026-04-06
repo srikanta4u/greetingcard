@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
@@ -26,12 +27,12 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function POST(_request: Request, context: RouteContext) {
   const admin = await assertAdmin();
   if (!admin.ok) {
-    return NextResponse.json({ error: admin.message }, { status: admin.status });
+    return apiError(admin.message, admin.status);
   }
 
   const { id } = await context.params;
   if (!id) {
-    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    return apiError("Missing id", 400);
   }
 
   const { data: claim, error: claimErr } = await adminClient
@@ -41,22 +42,16 @@ export async function POST(_request: Request, context: RouteContext) {
     .maybeSingle();
 
   if (claimErr || !claim) {
-    return NextResponse.json({ error: "Refund claim not found" }, { status: 404 });
+    return apiError("Refund claim not found", 404);
   }
 
   if (claim.status !== "pending") {
-    return NextResponse.json(
-      { error: "Claim is not pending" },
-      { status: 400 },
-    );
+    return apiError("Claim is not pending", 400);
   }
 
   const orderId = claim.order_id as string | null;
   if (!orderId) {
-    return NextResponse.json(
-      { error: "Claim has no order" },
-      { status: 400 },
-    );
+    return apiError("Claim has no order", 400);
   }
 
   const { error: upClaim } = await adminClient
@@ -66,10 +61,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
   if (upClaim) {
     console.error("[admin/refunds/approve] claim", upClaim);
-    return NextResponse.json(
-      { error: "Could not update claim" },
-      { status: 500 },
-    );
+    return apiError("Could not update claim", 500);
   }
 
   const { error: upOrder } = await adminClient
@@ -79,10 +71,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
   if (upOrder) {
     console.error("[admin/refunds/approve] order", upOrder);
-    return NextResponse.json(
-      { error: "Could not update order" },
-      { status: 500 },
-    );
+    return apiError("Could not update order", 500);
   }
 
   const { error: ledErr } = await adminClient

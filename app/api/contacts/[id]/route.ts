@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -50,23 +51,20 @@ type PatchBody = {
 export async function PATCH(request: Request, context: RouteCtx) {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { id } = await context.params;
   const owned = await getOwnedContact(supabase, user.id, id);
   if (!owned.ok) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: owned.status },
-    );
+    return apiError("Not found", owned.status);
   }
 
   let body: PatchBody;
   try {
     body = (await request.json()) as PatchBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const updates: Record<string, unknown> = {};
@@ -94,7 +92,7 @@ export async function PATCH(request: Request, context: RouteCtx) {
   }
 
   if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: "No updates" }, { status: 400 });
+    return apiError("No updates", 400);
   }
 
   const { data, error } = await supabase
@@ -126,10 +124,7 @@ export async function PATCH(request: Request, context: RouteCtx) {
 
   if (error) {
     console.error("[contacts PATCH]", error);
-    return NextResponse.json(
-      { error: "Could not update contact" },
-      { status: 500 },
-    );
+    return apiError("Could not update contact", 500);
   }
 
   return NextResponse.json({ contact: data });
@@ -138,16 +133,13 @@ export async function PATCH(request: Request, context: RouteCtx) {
 export async function DELETE(_request: Request, context: RouteCtx) {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { id } = await context.params;
   const owned = await getOwnedContact(supabase, user.id, id);
   if (!owned.ok) {
-    return NextResponse.json(
-      { error: "Not found" },
-      { status: owned.status },
-    );
+    return apiError("Not found", owned.status);
   }
 
   const { error } = await supabase
@@ -158,10 +150,7 @@ export async function DELETE(_request: Request, context: RouteCtx) {
 
   if (error) {
     console.error("[contacts DELETE]", error);
-    return NextResponse.json(
-      { error: "Could not delete contact" },
-      { status: 500 },
-    );
+    return apiError("Could not delete contact", 500);
   }
 
   return NextResponse.json({ success: true });

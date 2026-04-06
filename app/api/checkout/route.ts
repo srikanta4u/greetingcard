@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 
@@ -18,23 +19,20 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as CheckoutBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const { priceId, userId, orderId } = body;
   if (!priceId || typeof priceId !== "string") {
-    return NextResponse.json({ error: "priceId is required" }, { status: 400 });
+    return apiError("priceId is required", 400);
   }
   if (!userId || typeof userId !== "string") {
-    return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    return apiError("userId is required", 400);
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_URL;
   if (!baseUrl) {
-    return NextResponse.json(
-      { error: "NEXT_PUBLIC_URL is not configured" },
-      { status: 500 },
-    );
+    return apiError("NEXT_PUBLIC_URL is not configured", 500);
   }
 
   const mode = isSubscriptionPrice(priceId) ? "subscription" : "payment";
@@ -67,10 +65,7 @@ export async function POST(request: Request) {
     });
 
     if (!session.url) {
-      return NextResponse.json(
-        { error: "Checkout session did not return a URL" },
-        { status: 500 },
-      );
+      return apiError("Checkout session did not return a URL", 500);
     }
 
     return NextResponse.json({ url: session.url });
@@ -78,6 +73,6 @@ export async function POST(request: Request) {
     const message =
       err instanceof Error ? err.message : "Failed to create checkout session";
     console.error("[stripe] checkout.sessions.create:", err);
-    return NextResponse.json({ error: message }, { status: 502 });
+    return apiError(message, 502);
   }
 }

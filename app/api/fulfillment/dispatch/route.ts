@@ -4,6 +4,7 @@ import {
 } from "@/lib/fulfillment/buildPrintOrder";
 import { getAdapter } from "@/lib/fulfillment/index";
 import type { PrintOrder } from "@/lib/fulfillment/types";
+import { apiError } from "@/lib/apiError";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
@@ -34,15 +35,12 @@ async function insertFulfillmentJobLog(row: {
 export async function POST(request: Request) {
   const secret = process.env.DISPATCH_SECRET;
   if (!secret) {
-    return NextResponse.json(
-      { error: "DISPATCH_SECRET is not configured" },
-      { status: 500 },
-    );
+    return apiError("DISPATCH_SECRET is not configured", 500);
   }
 
   const token = bearerToken(request);
   if (!token || token !== secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { data: rows, error: fetchErr } = await adminClient
@@ -64,7 +62,7 @@ export async function POST(request: Request) {
       failed: 0,
       notes: fetchErr.message,
     });
-    return NextResponse.json({ error: fetchErr.message }, { status: 500 });
+    return apiError(fetchErr.message, 500);
   }
 
   const list = (rows ?? []) as OrderFulfillmentRow[];

@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -69,7 +70,7 @@ type PatchBody = {
 export async function PATCH(request: Request, context: RouteCtx) {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { id: contactId, eventId } = await context.params;
@@ -80,14 +81,14 @@ export async function PATCH(request: Request, context: RouteCtx) {
     eventId,
   );
   if (!gate.ok) {
-    return NextResponse.json({ error: "Not found" }, { status: gate.status });
+    return apiError("Not found", gate.status);
   }
 
   let body: PatchBody;
   try {
     body = (await request.json()) as PatchBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const updates: Record<string, unknown> = {};
@@ -95,17 +96,14 @@ export async function PATCH(request: Request, context: RouteCtx) {
   if (typeof body.event_type === "string") {
     const t = body.event_type.trim();
     if (!EVENT_TYPES.has(t)) {
-      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
+      return apiError("Invalid event type", 400);
     }
     updates.event_type = t;
   }
   if (typeof body.event_date === "string") {
     const d = body.event_date.trim();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-      return NextResponse.json(
-        { error: "event_date must be YYYY-MM-DD" },
-        { status: 400 },
-      );
+      return apiError("event_date must be YYYY-MM-DD", 400);
     }
     updates.event_date = d;
   }
@@ -114,7 +112,7 @@ export async function PATCH(request: Request, context: RouteCtx) {
   }
 
   if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: "No updates" }, { status: 400 });
+    return apiError("No updates", 400);
   }
 
   const { data, error } = await supabase
@@ -127,10 +125,7 @@ export async function PATCH(request: Request, context: RouteCtx) {
 
   if (error) {
     console.error("[contact_events PATCH]", error);
-    return NextResponse.json(
-      { error: "Could not update event" },
-      { status: 500 },
-    );
+    return apiError("Could not update event", 500);
   }
 
   return NextResponse.json({ event: data });
@@ -139,7 +134,7 @@ export async function PATCH(request: Request, context: RouteCtx) {
 export async function DELETE(_request: Request, context: RouteCtx) {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { id: contactId, eventId } = await context.params;
@@ -150,7 +145,7 @@ export async function DELETE(_request: Request, context: RouteCtx) {
     eventId,
   );
   if (!gate.ok) {
-    return NextResponse.json({ error: "Not found" }, { status: gate.status });
+    return apiError("Not found", gate.status);
   }
 
   const { error } = await supabase
@@ -161,10 +156,7 @@ export async function DELETE(_request: Request, context: RouteCtx) {
 
   if (error) {
     console.error("[contact_events DELETE]", error);
-    return NextResponse.json(
-      { error: "Could not delete event" },
-      { status: 500 },
-    );
+    return apiError("Could not delete event", 500);
   }
 
   return NextResponse.json({ success: true });

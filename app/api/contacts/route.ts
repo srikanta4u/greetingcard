@@ -1,3 +1,10 @@
+import { apiError } from "@/lib/apiError";
+import {
+  validateContactName,
+  validateStandardizedAddressFields,
+} from "@/lib/addressValidation";
+import { rateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/requestIp";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -17,7 +24,7 @@ async function getAuthedUser() {
 export async function GET() {
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { data, error } = await supabase
@@ -48,10 +55,7 @@ export async function GET() {
 
   if (error) {
     console.error("[contacts GET]", error);
-    return NextResponse.json(
-      { error: "Could not load contacts" },
-      { status: 500 },
-    );
+    return apiError("Could not load contacts", 500);
   }
 
   return NextResponse.json({ contacts: data ?? [] });
@@ -69,9 +73,20 @@ type PostBody = {
 };
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  if (
+    !rateLimit({
+      key: `${ip}:/api/contacts:POST`,
+      limit: 20,
+      windowMs: 60 * 1000,
+    })
+  ) {
+    return apiError("Too many requests", 429);
+  }
+
   const { supabase, user } = await getAuthedUser();
   if (!user || !supabase) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { data: profile } = await supabase
@@ -91,16 +106,10 @@ export async function POST(request: Request) {
 
     if (countError) {
       console.error("[contacts POST count]", countError);
-      return NextResponse.json(
-        { error: "Could not verify contact limit" },
-        { status: 500 },
-      );
+      return apiError("Could not verify contact limit", 500);
     }
     if ((count ?? 0) >= FREE_CONTACT_LIMIT) {
-      return NextResponse.json(
-        { error: "Upgrade to Pro to add unlimited contacts" },
-        { status: 403 },
-      );
+      return apiError("Upgrade to Pro to add unlimited contacts", 403);
     }
   }
 
@@ -108,10 +117,16 @@ export async function POST(request: Request) {
   try {
     body = (await request.json()) as PostBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
-  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const nameRaw = typeof body.name === "string" ? body.name : "";
+  const nameVal = validateContactName(nameRaw);
+  if (!nameVal.ok) {
+    return apiError(nameVal.error, 400);
+  }
+  const name = nameVal.name;
+
   const relationship =
     typeof body.relationship === "string" ? body.relationship.trim() : "";
   const address_line1 =
@@ -127,17 +142,17 @@ export async function POST(request: Request) {
   const country =
     typeof body.country === "string" ? body.country.trim().toUpperCase() : "";
 
-  if (!name) {
-    return NextResponse.json({ error: "Name is required" }, { status: 400 });
-  }
-  if (!address_line1 || !city || !state || !postal_code || !country) {
-    return NextResponse.json(
-      { error: "Complete address is required" },
-      { status: 400 },
-    );
+  const addrCheck = validateStandardizedAddressFields({
+    address_line1,
+    city,
+    state,
+    postal_code,
+    country,
+  });
+  if (!addrCheck.ok) {
+    return apiError(addrCheck.error, 400);
   }
 
-  // Must match public.contacts columns (snake_case)
   const insertRow = {
     user_id: user.id,
     name,
@@ -182,33 +197,12 @@ export async function POST(request: Request) {
 
     if (error) {
       console.error("[contacts POST] Supabase error:", error);
-      console.log(
-        "[contacts POST] Supabase message:",
-        error.message,
-        "code:",
-        error.code,
-        "details:",
-        error.details,
-      );
-      return NextResponse.json(
-        {
-          error: "Could not create contact",
-          details: error.message,
-          code: error.code,
-        },
-        { status: 500 },
-      );
+      return apiError("Could not create contact", 500);
     }
 
     return NextResponse.json({ contact: row });
   } catch (err) {
-    console.log("[contacts POST] catch:", err);
-    return NextResponse.json(
-      {
-        error: "Could not create contact",
-        details: err instanceof Error ? err.message : String(err),
-      },
-      { status: 500 },
-    );
+    console.error("[contacts POST] catch:", err);
+    return apiError("Could not create contact", 500);
   }
 }

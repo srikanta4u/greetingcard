@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -16,14 +17,14 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   let body: ApplyBody;
   try {
     body = (await request.json()) as ApplyBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const bio =
@@ -36,22 +37,13 @@ export async function POST(request: Request) {
   const rightsAccepted = body.rights_accepted === true;
 
   if (!bio) {
-    return NextResponse.json(
-      { error: "Bio is required" },
-      { status: 400 },
-    );
+    return apiError("Bio is required", 400);
   }
   if (bio.length > BIO_MAX) {
-    return NextResponse.json(
-      { error: `Bio must be at most ${BIO_MAX} characters` },
-      { status: 400 },
-    );
+    return apiError(`Bio must be at most ${BIO_MAX} characters`, 400);
   }
   if (!rightsAccepted) {
-    return NextResponse.json(
-      { error: "You must confirm rights to your designs" },
-      { status: 400 },
-    );
+    return apiError("You must confirm rights to your designs", 400);
   }
 
   const { error } = await supabase.from("creators").insert({
@@ -64,16 +56,10 @@ export async function POST(request: Request) {
 
   if (error) {
     if (error.code === "23505") {
-      return NextResponse.json(
-        { error: "You have already submitted an application" },
-        { status: 409 },
-      );
+      return apiError("You have already submitted an application", 409);
     }
     console.error("[creator/apply]", error);
-    return NextResponse.json(
-      { error: "Could not submit application" },
-      { status: 500 },
-    );
+    return apiError("Could not submit application", 500);
   }
 
   return NextResponse.json({ success: true });

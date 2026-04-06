@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!webhookSecret) {
     console.error("[stripe] STRIPE_WEBHOOK_SECRET is not set");
-    return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+    return apiError("Server misconfiguration", 500);
   }
 
   const body = await request.text();
@@ -16,7 +17,7 @@ export async function POST(request: Request) {
   const signature = headerList.get("stripe-signature");
 
   if (!signature) {
-    return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
+    return apiError("Missing stripe-signature", 400);
   }
 
   let event: Stripe.Event;
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Invalid signature";
     console.error("[stripe] Webhook signature verification failed:", message);
-    return NextResponse.json({ error: message }, { status: 400 });
+    return apiError(message, 400);
   }
 
   try {
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
     }
   } catch (err) {
     console.error("[stripe] Webhook handler error:", err);
-    return NextResponse.json({ error: "Handler failed" }, { status: 500 });
+    return apiError("Handler failed", 500);
   }
 
   return NextResponse.json({ received: true });

@@ -1,9 +1,14 @@
+import { apiError } from "@/lib/apiError";
 import { runCreatorPayouts } from "@/lib/payouts/runCreatorPayouts";
 import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
-async function assertAdmin() {
+type AssertAdminResult =
+  | { ok: true; userId: string }
+  | { ok: false; status: 401 | 403; message: string };
+
+async function assertAdmin(): Promise<AssertAdminResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -19,14 +24,16 @@ async function assertAdmin() {
   if (row?.role !== "admin") {
     return { ok: false as const, status: 403 as const, message: "Forbidden" };
   }
-  return { ok: true as const };
+  return { ok: true as const, userId: user.id };
 }
 
 export async function POST() {
   const admin = await assertAdmin();
   if (!admin.ok) {
-    return NextResponse.json({ error: admin.message }, { status: admin.status });
+    return apiError(admin.message, admin.status);
   }
+
+  console.log("[admin/payouts] run triggered by", admin.userId);
 
   try {
     const result = await runCreatorPayouts();
@@ -35,6 +42,6 @@ export async function POST() {
     const message =
       err instanceof Error ? err.message : "Payout run failed";
     console.error("[admin/payouts/run]", err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return apiError(message, 500);
   }
 }

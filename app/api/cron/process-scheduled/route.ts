@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { processScheduledCards } from "@/lib/processScheduledCards";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
@@ -29,15 +30,12 @@ async function insertCronDispatchCombinedLog(row: {
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET;
   if (!secret) {
-    return NextResponse.json(
-      { error: "CRON_SECRET is not configured" },
-      { status: 500 },
-    );
+    return apiError("CRON_SECRET is not configured", 500);
   }
 
   const token = bearerToken(request);
   if (!token || token !== secret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   try {
@@ -112,9 +110,6 @@ export async function GET(request: Request) {
     const message =
       err instanceof Error ? err.message : "Processing failed";
     console.error("[cron/process-scheduled]", err);
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+    return apiError(message, 500);
   }
 }

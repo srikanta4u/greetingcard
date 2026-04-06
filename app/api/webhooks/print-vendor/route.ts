@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { sendEmail } from "@/lib/email/send";
 import { cardShipped } from "@/lib/email/templates";
 import { adminClient } from "@/lib/supabase/admin";
@@ -12,19 +13,17 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return apiError("Invalid JSON", 400);
   }
 
   if (!isRecord(body) || typeof body.event !== "string") {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    return apiError("Invalid payload", 400);
   }
 
   const printJobId =
     typeof body.print_job_id === "string" ? body.print_job_id.trim() : "";
   if (!printJobId) {
-    return NextResponse.json({ error: "print_job_id required" }, {
-      status: 400,
-    });
+    return apiError("print_job_id required", 400);
   }
 
   const { data: order, error: findErr } = await adminClient
@@ -34,7 +33,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (findErr || !order) {
-    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    return apiError("Order not found", 404);
   }
 
   if (body.event === "order.shipped") {
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
 
     if (upErr) {
       console.error("[webhooks/print-vendor] shipped update", upErr);
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+      return apiError(upErr.message, 500);
     }
 
     if (order.user_id) {
@@ -116,11 +115,11 @@ export async function POST(request: Request) {
 
     if (upErr) {
       console.error("[webhooks/print-vendor] delivered update", upErr);
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+      return apiError(upErr.message, 500);
     }
 
     return NextResponse.json({ received: true });
   }
 
-  return NextResponse.json({ error: "Unknown event" }, { status: 400 });
+  return apiError("Unknown event", 400);
 }

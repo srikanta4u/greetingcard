@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -33,9 +34,7 @@ export async function GET(request: Request) {
 
   if (error) {
     console.error("[designs/active]", error);
-    return NextResponse.json({ error: "Could not load designs" }, {
-      status: 500,
-    });
+    return apiError("Could not load designs", 500);
   }
 
   return NextResponse.json({ designs: data ?? [] });

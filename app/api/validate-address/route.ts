@@ -1,6 +1,8 @@
+import { apiError } from "@/lib/apiError";
+import { validateStandardizedAddressFields } from "@/lib/addressValidation";
+import { rateLimit } from "@/lib/rateLimit";
+import { getClientIp } from "@/lib/requestIp";
 import { NextResponse } from "next/server";
-
-const COUNTRIES = new Set(["US", "CA", "IN"]);
 
 export type StandardizedAddressPayload = {
   address_line1: string;
@@ -19,20 +21,6 @@ type Body = {
   postal_code?: unknown;
   country?: unknown;
 };
-
-function validatePostal(postal: string, country: string): boolean {
-  const p = postal.trim();
-  switch (country) {
-    case "US":
-      return /^\d{5}(-\d{4})?$/.test(p);
-    case "CA":
-      return /^[A-Za-z]\d[A-Za-z][ -]?\d[A-Za-z]\d$/.test(p);
-    case "IN":
-      return /^\d{6}$/.test(p);
-    default:
-      return false;
-  }
-}
 
 function formatCaPostal(p: string) {
   const compact = p.replace(/\s+/g, "").toUpperCase();
@@ -54,12 +42,8 @@ function standardize(
   if (country === "CA") {
     pc = formatCaPostal(pc);
   } else if (country === "US") {
-    const m = pc.match(/^(\d{5})(-?(\d{4}))?$/);
-    if (m && m[3]) {
-      pc = `${m[1]}-${m[3]}`;
-    } else if (m) {
-      pc = m[1];
-    }
+    const m = pc.match(/^(\d{5})$/);
+    pc = m ? m[1] : pc;
   }
 
   return {
@@ -73,14 +57,22 @@ function standardize(
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  if (
+    !rateLimit({
+      key: `${ip}:/api/validate-address`,
+      limit: 30,
+      windowMs: 60 * 1000,
+    })
+  ) {
+    return apiError("Too many requests", 429);
+  }
+
   let body: Body;
   try {
     body = (await request.json()) as Body;
   } catch {
-    return NextResponse.json(
-      { valid: false as const, error: "Invalid JSON body" },
-      { status: 400 },
-    );
+    return apiError("Invalid JSON body", 400);
   }
 
   const address_line1 =
@@ -95,40 +87,17 @@ export async function POST(request: Request) {
   const country =
     typeof body.country === "string" ? body.country.trim().toUpperCase() : "";
 
-  if (!address_line1) {
+  const fieldsCheck = validateStandardizedAddressFields({
+    address_line1,
+    city,
+    state,
+    postal_code,
+    country,
+  });
+  if (!fieldsCheck.ok) {
     return NextResponse.json({
       valid: false as const,
-      error: "Address line 1 is required",
-    });
-  }
-  if (!city) {
-    return NextResponse.json({
-      valid: false as const,
-      error: "City is required",
-    });
-  }
-  if (!state) {
-    return NextResponse.json({
-      valid: false as const,
-      error: "State / province is required",
-    });
-  }
-  if (!postal_code) {
-    return NextResponse.json({
-      valid: false as const,
-      error: "Postal code is required",
-    });
-  }
-  if (!COUNTRIES.has(country)) {
-    return NextResponse.json({
-      valid: false as const,
-      error: "Country must be US, CA, or IN",
-    });
-  }
-  if (!validatePostal(postal_code, country)) {
-    return NextResponse.json({
-      valid: false as const,
-      error: "Postal code format is invalid for the selected country",
+      error: fieldsCheck.error,
     });
   }
 

@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { sendEmail } from "@/lib/email/send";
 import { designApproved } from "@/lib/email/templates";
 import { createClient } from "@/lib/supabase/server";
@@ -28,12 +29,12 @@ type RouteContext = { params: Promise<{ id: string }> };
 export async function POST(_request: Request, context: RouteContext) {
   const admin = await assertAdmin();
   if (!admin.ok) {
-    return NextResponse.json({ error: admin.message }, { status: admin.status });
+    return apiError(admin.message, admin.status);
   }
 
   const { id } = await context.params;
   if (!id) {
-    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    return apiError("Missing id", 400);
   }
 
   const { data: design, error: fetchErr } = await adminClient
@@ -43,7 +44,7 @@ export async function POST(_request: Request, context: RouteContext) {
     .maybeSingle();
 
   if (fetchErr || !design) {
-    return NextResponse.json({ error: "Design not found" }, { status: 404 });
+    return apiError("Design not found", 404);
   }
 
   const { error } = await adminClient
@@ -53,10 +54,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
   if (error) {
     console.error("[admin/designs/approve]", error);
-    return NextResponse.json(
-      { error: "Could not update design" },
-      { status: 500 },
-    );
+    return apiError("Could not update design", 500);
   }
 
   if (design.creator_id) {

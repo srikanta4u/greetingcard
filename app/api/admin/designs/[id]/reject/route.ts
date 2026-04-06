@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { sendEmail } from "@/lib/email/send";
 import { designRejected } from "@/lib/email/templates";
 import { createClient } from "@/lib/supabase/server";
@@ -32,28 +33,25 @@ type RejectBody = {
 export async function POST(request: Request, context: RouteContext) {
   const admin = await assertAdmin();
   if (!admin.ok) {
-    return NextResponse.json({ error: admin.message }, { status: admin.status });
+    return apiError(admin.message, admin.status);
   }
 
   const { id } = await context.params;
   if (!id) {
-    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    return apiError("Missing id", 400);
   }
 
   let body: RejectBody;
   try {
     body = (await request.json()) as RejectBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const reason =
     typeof body.reason === "string" ? body.reason.trim() : "";
   if (!reason) {
-    return NextResponse.json(
-      { error: "reason is required" },
-      { status: 400 },
-    );
+    return apiError("reason is required", 400);
   }
 
   const { data: design, error: fetchErr } = await adminClient
@@ -63,7 +61,7 @@ export async function POST(request: Request, context: RouteContext) {
     .maybeSingle();
 
   if (fetchErr || !design) {
-    return NextResponse.json({ error: "Design not found" }, { status: 404 });
+    return apiError("Design not found", 404);
   }
 
   const { error } = await adminClient
@@ -73,10 +71,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   if (error) {
     console.error("[admin/designs/reject]", error);
-    return NextResponse.json(
-      { error: "Could not update design" },
-      { status: 500 },
-    );
+    return apiError("Could not update design", 500);
   }
 
   if (design.creator_id) {

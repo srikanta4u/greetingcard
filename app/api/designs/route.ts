@@ -1,3 +1,4 @@
+import { apiError } from "@/lib/apiError";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return apiError("Unauthorized", 401);
   }
 
   const { data: creator, error: creatorError } = await supabase
@@ -49,23 +50,17 @@ export async function POST(request: Request) {
 
   if (creatorError) {
     console.error("[designs POST] creator lookup", creatorError);
-    return NextResponse.json(
-      { error: "Could not verify creator account" },
-      { status: 500 },
-    );
+    return apiError("Could not verify creator account", 500);
   }
   if (!creator) {
-    return NextResponse.json(
-      { error: "You need a creator profile to upload designs" },
-      { status: 403 },
-    );
+    return apiError("You need a creator profile to upload designs", 403);
   }
 
   let body: DesignsBody;
   try {
     body = (await request.json()) as DesignsBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return apiError("Invalid JSON body", 400);
   }
 
   const title =
@@ -94,33 +89,22 @@ export async function POST(request: Request) {
       : NaN;
 
   if (!title) {
-    return NextResponse.json({ error: "Title is required" }, { status: 400 });
+    return apiError("Title is required", 400);
   }
   if (title.length > TITLE_MAX) {
-    return NextResponse.json(
-      { error: `Title must be at most ${TITLE_MAX} characters` },
-      { status: 400 },
-    );
+    return apiError(`Title must be at most ${TITLE_MAX} characters`, 400);
   }
   if (!front) {
-    return NextResponse.json(
-      { error: "Front image is required" },
-      { status: 400 },
-    );
+    return apiError("Front image is required", 400);
   }
   if (Number.isNaN(creator_markup)) {
-    return NextResponse.json(
-      { error: "Invalid creator markup" },
-      { status: 400 },
-    );
+    return apiError("Invalid creator markup", 400);
   }
   creator_markup = roundToStep(creator_markup, MARKUP_STEP);
   if (creator_markup < MARKUP_MIN || creator_markup > MARKUP_MAX) {
-    return NextResponse.json(
-      {
-        error: `Markup must be between $${MARKUP_MIN.toFixed(2)} and $${MARKUP_MAX.toFixed(2)}`,
-      },
-      { status: 400 },
+    return apiError(
+      `Markup must be between $${MARKUP_MIN.toFixed(2)} and $${MARKUP_MAX.toFixed(2)}`,
+      400,
     );
   }
 
@@ -144,10 +128,7 @@ export async function POST(request: Request) {
 
   if (insertError) {
     console.error("[designs POST] insert", insertError);
-    return NextResponse.json(
-      { error: "Could not save design" },
-      { status: 500 },
-    );
+    return apiError("Could not save design", 500);
   }
 
   return NextResponse.json({ success: true, id: design.id });
