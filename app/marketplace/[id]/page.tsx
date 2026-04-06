@@ -8,7 +8,9 @@ import Link from "next/link";
 
 function occasionPhrase(tags: unknown): string {
   if (!Array.isArray(tags)) return "";
-  const labels = tags.filter((t): t is string => typeof t === "string" && t.trim());
+  const labels = tags.filter(
+    (t): t is string => typeof t === "string" && t.trim().length > 0,
+  );
   if (labels.length === 0) return "";
   if (labels.length === 1) return ` Perfect for ${labels[0]}.`;
   return ` Great for ${labels.slice(0, 3).join(", ")}.`;
