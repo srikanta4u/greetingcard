@@ -5,6 +5,9 @@ import { Suspense } from "react";
 const VIOLET = "#7c3aed";
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: "/",
+  },
   title: {
     absolute: "AutoCard — Automated Greeting Cards for Every Occasion",
   },

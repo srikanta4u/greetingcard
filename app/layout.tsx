@@ -1,9 +1,11 @@
+import { BackToTop } from "@/app/components/BackToTop";
+import { CookieBanner } from "@/app/components/CookieBanner";
 import { ToastProvider } from "@/components/Toast";
 import { AuthenticatedTopNav } from "@/components/layout/AuthenticatedTopNav";
 import { PublicMarketingNav } from "@/components/layout/PublicMarketingNav";
 import { RootNavGate } from "@/components/layout/RootNavGate";
 import { createClient } from "@/lib/supabase/server";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -16,8 +18,17 @@ const inter = Inter({
 const siteUrl =
   process.env.NEXT_PUBLIC_URL || "https://greetingcard-sodw.vercel.app";
 
+export const viewport: Viewport = {
+  themeColor: "#7C3AED",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  manifest: "/manifest.json",
+  appleWebApp: {
+    title: "AutoCard",
+    statusBarStyle: "default",
+  },
   title: {
     default: "AutoCard | Send Beautiful Greeting Cards Automatically",
     template: "%s | AutoCard",
@@ -80,6 +91,8 @@ export default async function RootLayout({
             )}
           </RootNavGate>
           {children}
+          <CookieBanner />
+          <BackToTop />
         </ToastProvider>
       </body>
     </html>

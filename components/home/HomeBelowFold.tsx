@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/site-footer";
 import Link from "next/link";
 
 export default function HomeBelowFold() {
@@ -192,40 +193,7 @@ export default function HomeBelowFold() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-violet-100 bg-zinc-50 px-4 py-12 dark:border-violet-900/20 dark:bg-zinc-950">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 sm:flex-row sm:justify-between">
-          <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            <Link
-              href="/marketplace"
-              className="transition hover:text-violet-700 dark:hover:text-violet-300"
-            >
-              Marketplace
-            </Link>
-            <Link
-              href="/pricing"
-              className="transition hover:text-violet-700 dark:hover:text-violet-300"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="/creator/apply"
-              className="transition hover:text-violet-700 dark:hover:text-violet-300"
-            >
-              Creator signup
-            </Link>
-            <Link
-              href="/auth/login"
-              className="transition hover:text-violet-700 dark:hover:text-violet-300"
-            >
-              Login
-            </Link>
-          </nav>
-          <p className="text-center text-sm text-zinc-500 dark:text-zinc-500">
-            © 2026 AutoCard. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

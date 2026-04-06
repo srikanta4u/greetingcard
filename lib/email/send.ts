@@ -6,15 +6,17 @@ export async function sendEmail({
   to,
   subject,
   html,
+  replyTo,
 }: {
   to: string;
   subject: string;
   html: string;
-}): Promise<void> {
+  replyTo?: string;
+}): Promise<boolean> {
   const key = process.env.RESEND_API_KEY?.trim();
   if (!key) {
     console.warn("[email] RESEND_API_KEY missing; skipping send to", to);
-    return;
+    return false;
   }
 
   try {
@@ -24,13 +26,16 @@ export async function sendEmail({
       to,
       subject,
       html,
+      ...(replyTo ? { replyTo } : {}),
     });
     if (error) {
       console.error("[email] Resend API error:", error, { to, subject });
-      return;
+      return false;
     }
     console.log("[email] sent OK:", { to, subject, id: data?.id });
+    return true;
   } catch (err) {
     console.error("[email] send failed:", err, { to, subject });
+    return false;
   }
 }
