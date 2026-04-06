@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const FROM = "AutoCard <noreply@autocard.com>";
+const FROM = "AutoCard <onboarding@resend.dev>";
 
 export async function sendEmail({
   to,
