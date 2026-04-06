@@ -55,7 +55,7 @@ export function PricingPlanSection() {
           <button
             type="button"
             onClick={() => setYearly(false)}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+            className={`min-h-11 rounded-full px-5 py-2 text-sm font-semibold transition ${
               !yearly
                 ? "bg-violet-600 text-white shadow-sm"
                 : "text-zinc-600 hover:text-violet-700 dark:text-zinc-400 dark:hover:text-violet-300"
@@ -66,7 +66,7 @@ export function PricingPlanSection() {
           <button
             type="button"
             onClick={() => setYearly(true)}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+            className={`min-h-11 rounded-full px-5 py-2 text-sm font-semibold transition ${
               yearly
                 ? "bg-violet-600 text-white shadow-sm"
                 : "text-zinc-600 hover:text-violet-700 dark:text-zinc-400 dark:hover:text-violet-300"
@@ -122,7 +122,7 @@ export function PricingPlanSection() {
             </ul>
             <Link
               href="/auth/signup"
-              className="mt-8 flex w-full items-center justify-center rounded-xl border-2 border-violet-200 bg-white py-3 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 dark:border-violet-800 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/50"
+              className="mt-8 flex min-h-11 w-full items-center justify-center rounded-xl border-2 border-violet-200 bg-white py-3 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-50 dark:border-violet-800 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/50"
             >
               Get started free
             </Link>
@@ -165,7 +165,7 @@ export function PricingPlanSection() {
             </ul>
             <Link
               href="/dashboard"
-              className="mt-8 flex w-full items-center justify-center rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/30 transition hover:bg-violet-500"
+              className="mt-8 flex min-h-11 w-full items-center justify-center rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/30 transition hover:bg-violet-500"
             >
               Upgrade to Pro
             </Link>

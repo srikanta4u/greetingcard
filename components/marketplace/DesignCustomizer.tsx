@@ -155,15 +155,15 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
   const overlayText = showMessage ? message : "";
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-12">
+    <div className="mx-auto min-w-0 max-w-6xl overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 lg:py-12">
       <Link
         href="/marketplace"
-        className="text-sm font-medium text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
+        className="inline-flex min-h-11 items-center text-sm font-medium text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
       >
         ← Back to marketplace
       </Link>
 
-      <div className="mt-8 flex flex-col gap-10 lg:flex-row lg:gap-12">
+      <div className="mt-6 flex flex-col gap-8 sm:mt-8 sm:gap-10 lg:flex-row lg:gap-12">
         {/* Live preview */}
         <div className="min-w-0 flex-1">
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
@@ -208,7 +208,7 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
               <button
                 type="button"
                 onClick={() => setShowFront((v) => !v)}
-                className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                className="min-h-11 rounded-full border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
               >
                 {showFront ? "Show back" : "Show front"}
               </button>
@@ -217,11 +217,11 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
         </div>
 
         {/* Customization */}
-        <div className="w-full shrink-0 lg:max-w-md">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+        <div className="w-full min-w-0 shrink-0 lg:max-w-md">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 sm:text-2xl dark:text-zinc-50">
             {design.title}
           </h1>
-          <p className="mt-2 text-lg font-semibold tabular-nums text-zinc-800 dark:text-zinc-200">
+          <p className="mt-2 text-base font-semibold tabular-nums text-zinc-800 sm:text-lg dark:text-zinc-200">
             {formatMoney(price)}
           </p>
 
@@ -241,7 +241,7 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
                   maxLength={MESSAGE_MAX}
                   rows={6}
                   placeholder="Write your personal message here..."
-                  className="mt-2 block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500"
+                  className="mt-2 block min-h-[120px] w-full rounded-lg border border-zinc-300 bg-white px-3 py-3 text-base text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 sm:text-sm dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500"
                 />
                 <p
                   className={`mt-2 text-xs tabular-nums ${
@@ -268,7 +268,7 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
                         key={f.id}
                         type="button"
                         onClick={() => setFontId(f.id)}
-                        className={`flex flex-col items-center rounded-xl border px-4 py-3 text-left transition ${
+                        className={`flex min-h-11 flex-col items-center gap-0.5 rounded-xl border px-3 py-1.5 text-left transition sm:min-h-[4.5rem] sm:px-4 sm:py-3 ${
                           active
                             ? "border-zinc-900 bg-zinc-50 ring-2 ring-zinc-900 dark:border-zinc-100 dark:bg-zinc-800 dark:ring-zinc-100"
                             : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
@@ -307,7 +307,7 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
                         type="button"
                         aria-label={`Color ${c}`}
                         onClick={() => setAccentColor(c)}
-                        className={`h-10 w-10 rounded-full border-2 shadow-sm transition ${
+                        className={`h-11 w-11 min-h-[44px] min-w-[44px] rounded-full border-2 shadow-sm transition ${
                           active
                             ? "border-zinc-900 ring-2 ring-zinc-900 ring-offset-2 dark:border-zinc-100 dark:ring-zinc-100 dark:ring-offset-zinc-950"
                             : "border-zinc-200 dark:border-zinc-600"
@@ -335,7 +335,7 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
               <button
                 type="button"
                 onClick={handleAddToOrder}
-                className="mt-4 w-full rounded-lg bg-zinc-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+                className="mt-4 flex min-h-11 w-full min-w-0 items-center justify-center rounded-lg bg-zinc-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
               >
                 Add to Order
               </button>

@@ -1,5 +1,6 @@
 import { DesignCard, type MarketplaceDesign } from "@/components/marketplace/DesignCard";
 import { FilterSidebar } from "@/components/marketplace/FilterSidebar";
+import { MarketplaceFiltersCollapsible } from "@/components/marketplace/MarketplaceFiltersCollapsible";
 import { SearchBar } from "@/components/marketplace/SearchBar";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
@@ -214,8 +215,8 @@ export default async function MarketplacePage({
   };
 
   return (
-    <div className="min-h-full bg-zinc-50 dark:bg-zinc-950">
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-full min-w-0 overflow-x-hidden bg-zinc-50 dark:bg-zinc-950">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
         <div className="mb-2">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             Marketplace
@@ -227,14 +228,18 @@ export default async function MarketplacePage({
 
         <Suspense
           fallback={
-            <div className="h-12 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-12 min-h-11 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />
           }
         >
           <SearchBar />
         </Suspense>
 
+        <div className="mt-6 lg:hidden">
+          <MarketplaceFiltersCollapsible />
+        </div>
+
         <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-start">
-          <aside className="w-full shrink-0 lg:sticky lg:top-8 lg:w-64">
+          <aside className="hidden w-full shrink-0 lg:sticky lg:top-8 lg:block lg:w-64">
             <Suspense fallback={<div className="h-48 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-800" />}>
               <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
                 <FilterSidebar />
@@ -258,14 +263,14 @@ export default async function MarketplacePage({
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                   <Link
                     href={retryHref}
-                    className="inline-flex rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl px-5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                     style={{ backgroundColor: "#7C3AED" }}
                   >
                     Try Again
                   </Link>
                   <Link
                     href="/marketplace"
-                    className="inline-flex rounded-xl border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                    className="inline-flex min-h-11 items-center justify-center rounded-xl border border-zinc-300 bg-white px-5 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                   >
                     Reset filters
                   </Link>
@@ -280,7 +285,7 @@ export default async function MarketplacePage({
             ) : (
               <>
                 {/* Each card links to /marketplace/[id] (see DesignCard href) */}
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {designs.map((d) => (
                     <DesignCard key={d.id} design={d} />
                   ))}
@@ -294,12 +299,12 @@ export default async function MarketplacePage({
                     {pageNum > 1 ? (
                       <Link
                         href={buildPageHref(pageNum - 1, paginationBase)}
-                        className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="inline-flex min-h-11 min-w-[44px] items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                       >
                         Previous
                       </Link>
                     ) : (
-                      <span className="rounded-lg border border-transparent px-4 py-2 text-sm text-zinc-400">
+                      <span className="inline-flex min-h-11 min-w-[44px] items-center justify-center rounded-lg border border-transparent px-4 text-sm text-zinc-400">
                         Previous
                       </span>
                     )}
@@ -309,12 +314,12 @@ export default async function MarketplacePage({
                     {pageNum < totalPages ? (
                       <Link
                         href={buildPageHref(pageNum + 1, paginationBase)}
-                        className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                        className="inline-flex min-h-11 min-w-[44px] items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
                       >
                         Next
                       </Link>
                     ) : (
-                      <span className="rounded-lg border border-transparent px-4 py-2 text-sm text-zinc-400">
+                      <span className="inline-flex min-h-11 min-w-[44px] items-center justify-center rounded-lg border border-transparent px-4 text-sm text-zinc-400">
                         Next
                       </span>
                     )}

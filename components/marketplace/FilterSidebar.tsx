@@ -78,7 +78,7 @@ export function FilterSidebar() {
             const v = e.target.value;
             updateParam("sort", v === "newest" ? null : v);
           }}
-          className="mt-2 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-400"
+          className="mt-2 min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm focus:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-500/20 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-zinc-400"
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
@@ -100,7 +100,7 @@ export function FilterSidebar() {
                 key={o}
                 type="button"
                 onClick={() => updateParam("occasion", active ? null : o)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${chipClass(active)}`}
+                className={`min-h-11 rounded-full border px-3 py-2 text-xs font-medium transition ${chipClass(active)}`}
               >
                 {o}
               </button>
@@ -121,7 +121,7 @@ export function FilterSidebar() {
                 key={t}
                 type="button"
                 onClick={() => updateParam("tone", active ? null : t)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${chipClass(active)}`}
+                className={`min-h-11 rounded-full border px-3 py-2 text-xs font-medium transition ${chipClass(active)}`}
               >
                 {t}
               </button>
@@ -142,7 +142,7 @@ export function FilterSidebar() {
                 key={r}
                 type="button"
                 onClick={() => updateParam("recipient", active ? null : r)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${chipClass(active)}`}
+                className={`min-h-11 rounded-full border px-3 py-2 text-xs font-medium transition ${chipClass(active)}`}
               >
                 {r}
               </button>

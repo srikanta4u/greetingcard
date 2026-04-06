@@ -34,32 +34,32 @@ export const metadata: Metadata = {
 
 export default function HomePage() {
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden">
       {/* Hero */}
       <section
-        className="relative overflow-hidden bg-gradient-to-br from-violet-100 via-violet-50 to-white px-4 py-20 sm:px-6 sm:py-28 dark:from-violet-950 dark:via-zinc-900 dark:to-zinc-950"
+        className="relative overflow-hidden bg-gradient-to-br from-violet-100 via-violet-50 to-white px-4 py-16 sm:px-6 sm:py-28 dark:from-violet-950 dark:via-zinc-900 dark:to-zinc-950"
         style={{
           backgroundImage: `radial-gradient(ellipse 80% 60% at 50% -20%, ${VIOLET}22, transparent), radial-gradient(ellipse 60% 50% at 100% 0%, ${VIOLET}18, transparent)`,
         }}
       >
         <div className="relative mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-zinc-900 sm:text-5xl sm:leading-tight dark:text-white">
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-zinc-900 sm:text-4xl sm:leading-tight md:text-5xl dark:text-white">
             Never miss a moment that matters
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-zinc-600 sm:mt-6 sm:text-lg dark:text-zinc-400">
             AutoCard sends beautiful, personalized greeting cards automatically —
             so you&apos;re always there for the people you love.
           </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+          <div className="mt-8 flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:mx-auto sm:mt-10 sm:max-w-none sm:flex-row sm:items-center sm:gap-4">
             <Link
               href="/marketplace"
-              className="inline-flex w-full min-w-[200px] items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-violet-700 shadow-lg shadow-violet-900/10 ring-1 ring-violet-200/80 transition hover:bg-violet-50 sm:w-auto dark:bg-zinc-800 dark:text-violet-200 dark:ring-violet-800 dark:hover:bg-zinc-700"
+              className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-violet-700 shadow-lg shadow-violet-900/10 ring-1 ring-violet-200/80 transition hover:bg-violet-50 sm:w-auto sm:min-w-[200px] dark:bg-zinc-800 dark:text-violet-200 dark:ring-violet-800 dark:hover:bg-zinc-700"
             >
               Browse cards
             </Link>
             <Link
               href="/auth/signup"
-              className="inline-flex w-full min-w-[200px] items-center justify-center rounded-xl bg-violet-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-600/35 transition hover:bg-violet-500 sm:w-auto"
+              className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/35 transition hover:bg-violet-500 sm:w-auto sm:min-w-[200px]"
             >
               Start for free
             </Link>
@@ -70,13 +70,13 @@ export default function HomePage() {
       {/* Features */}
       <section className="border-y border-violet-100/80 bg-white px-4 py-20 sm:px-6 dark:border-violet-900/20 dark:bg-zinc-950">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-white">
+          <h2 className="text-center text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl md:text-3xl dark:text-white">
             Why AutoCard
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-center text-zinc-600 dark:text-zinc-400">
+          <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-zinc-600 sm:text-base dark:text-zinc-400">
             Thoughtful cards, zero stress — we handle the timing and delivery.
           </p>
-          <div className="mt-14 grid gap-8 md:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:mt-14 sm:gap-8 md:grid-cols-3">
             <article className="rounded-2xl border border-violet-100 bg-violet-50/40 p-8 shadow-sm transition hover:border-violet-200 hover:shadow-md dark:border-violet-900/30 dark:bg-violet-950/20 dark:hover:border-violet-800">
               <div className="text-3xl" aria-hidden>
                 🗓
@@ -120,7 +120,7 @@ export default function HomePage() {
       {/* How it works */}
       <section className="bg-zinc-50 px-4 py-20 sm:px-6 dark:bg-zinc-900">
         <div className="mx-auto max-w-4xl">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-white">
+          <h2 className="text-center text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl md:text-3xl dark:text-white">
             How it works
           </h2>
           <ol className="mt-14 space-y-10">
@@ -162,10 +162,10 @@ export default function HomePage() {
       {/* Pricing teaser */}
       <section className="border-y border-violet-100/80 bg-white px-4 py-20 sm:px-6 dark:border-violet-900/20 dark:bg-zinc-950">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl dark:text-white">
+          <h2 className="text-center text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl md:text-3xl dark:text-white">
             Simple pricing
           </h2>
-          <div className="mt-12 grid gap-8 md:grid-cols-2">
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2">
             <div className="rounded-2xl border border-zinc-200 bg-zinc-50/80 p-8 dark:border-zinc-800 dark:bg-zinc-900/50">
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white">
                 Free
@@ -214,7 +214,7 @@ export default function HomePage() {
               </ul>
               <Link
                 href="/pricing"
-                className="mt-8 inline-flex w-full items-center justify-center rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-md shadow-violet-600/30 transition hover:bg-violet-500"
+                className="mt-8 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-violet-600 py-3 text-sm font-semibold text-white shadow-md shadow-violet-600/30 transition hover:bg-violet-500"
               >
                 Upgrade to Pro
               </Link>
@@ -226,16 +226,16 @@ export default function HomePage() {
       {/* Creator CTA */}
       <section className="bg-gradient-to-br from-violet-600 to-violet-800 px-4 py-20 text-white sm:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          <h2 className="text-xl font-bold tracking-tight sm:text-2xl md:text-3xl">
             Are you an artist or designer?
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-violet-100">
+          <p className="mt-4 text-base leading-relaxed text-violet-100 sm:text-lg">
             Sell your greeting card designs on AutoCard. Earn 60% on every card
             sold.
           </p>
           <Link
             href="/creator/apply"
-            className="mt-10 inline-flex items-center justify-center rounded-xl bg-white px-8 py-3.5 text-sm font-semibold text-violet-700 shadow-lg transition hover:bg-violet-50"
+            className="mt-10 inline-flex min-h-11 w-full max-w-xs items-center justify-center rounded-xl bg-white px-8 py-3 text-sm font-semibold text-violet-700 shadow-lg transition hover:bg-violet-50 sm:w-auto"
           >
             Become a creator
           </Link>

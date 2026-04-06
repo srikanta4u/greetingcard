@@ -40,9 +40,9 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div className="flex min-h-full flex-1 flex-col justify-center bg-zinc-50 px-4 py-12 dark:bg-zinc-950 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-md">
-          <div className="rounded-2xl border border-zinc-200 bg-white px-8 py-10 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex min-h-full flex-1 flex-col justify-center overflow-x-hidden bg-zinc-50 px-4 py-10 dark:bg-zinc-950 sm:px-6 sm:py-12 lg:px-8">
+        <div className="mx-auto w-full min-w-0 max-w-md">
+          <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-8 text-center shadow-sm sm:px-8 sm:py-10 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/50">
               <svg
                 className="h-6 w-6 text-emerald-700 dark:text-emerald-400"
@@ -78,9 +78,9 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center bg-zinc-50 px-4 py-12 dark:bg-zinc-950 sm:px-6 lg:px-8">
-      <div className="mx-auto w-full max-w-md">
-        <div className="rounded-2xl border border-zinc-200 bg-white px-8 py-10 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="flex min-h-full flex-1 flex-col justify-center overflow-x-hidden bg-zinc-50 px-4 py-10 dark:bg-zinc-950 sm:px-6 sm:py-12 lg:px-8">
+      <div className="mx-auto w-full min-w-0 max-w-md">
+        <div className="rounded-2xl border border-zinc-200 bg-white px-5 py-8 shadow-sm sm:px-8 sm:py-10 dark:border-zinc-800 dark:bg-zinc-900">
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
               Create an account
@@ -115,7 +115,7 @@ export default function SignupPage() {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-zinc-400 transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20"
+                className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 shadow-sm outline-none ring-zinc-400 transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20"
                 placeholder="Jane Doe"
               />
             </div>
@@ -135,7 +135,7 @@ export default function SignupPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-sm outline-none ring-zinc-400 transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20"
+                className="block min-h-11 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 shadow-sm outline-none ring-zinc-400 transition placeholder:text-zinc-400 focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 sm:text-sm dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-50 dark:focus:border-zinc-300 dark:focus:ring-zinc-300/20"
                 placeholder="you@example.com"
               />
             </div>
@@ -167,7 +167,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex w-full items-center justify-center rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:outline-zinc-100"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-zinc-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200 dark:focus-visible:outline-zinc-100"
             >
               {loading ? "Creating account…" : "Create account"}
             </button>

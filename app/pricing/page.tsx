@@ -37,13 +37,13 @@ const FAQ = [
 
 export default function PricingPage() {
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex min-w-0 flex-1 flex-col overflow-x-hidden bg-zinc-50 dark:bg-zinc-950">
       <section className="border-b border-violet-100 bg-white px-4 py-16 dark:border-violet-900/30 dark:bg-zinc-900">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
+        <div className="mx-auto max-w-3xl min-w-0 px-1 text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 sm:text-3xl md:text-4xl dark:text-white">
             Pricing that fits how you send cards
           </h1>
-          <p className="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+          <p className="mt-4 text-base text-zinc-600 sm:text-lg dark:text-zinc-400">
             Start free, upgrade when you want unlimited contacts and automated
             sending.
           </p>
@@ -65,7 +65,7 @@ export default function PricingPage() {
                 key={item.q}
                 className="group rounded-xl border border-violet-100 bg-violet-50/30 open:bg-white dark:border-violet-900/30 dark:bg-violet-950/20 dark:open:bg-zinc-900"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-left font-semibold text-zinc-900 marker:hidden dark:text-white [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-left text-sm font-semibold text-zinc-900 marker:hidden sm:text-base dark:text-white [&::-webkit-details-marker]:hidden">
                   <span>{item.q}</span>
                   <span className="shrink-0 font-mono text-lg text-violet-600 group-open:hidden dark:text-violet-400">
                     +
@@ -83,13 +83,13 @@ export default function PricingPage() {
           <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/auth/signup"
-              className="inline-flex w-full min-w-[200px] items-center justify-center rounded-xl border-2 border-violet-200 bg-white px-6 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 sm:w-auto dark:border-violet-800 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/50"
+              className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl border-2 border-violet-200 bg-white px-6 py-3 text-sm font-semibold text-violet-700 transition hover:bg-violet-50 sm:w-auto sm:min-w-[200px] dark:border-violet-800 dark:bg-zinc-900 dark:text-violet-300 dark:hover:bg-violet-950/50"
             >
               Get started free
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex w-full min-w-[200px] items-center justify-center rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 sm:w-auto"
+              className="inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-xl bg-violet-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-500 sm:w-auto sm:min-w-[200px]"
             >
               Upgrade to Pro
             </Link>
