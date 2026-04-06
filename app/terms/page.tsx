@@ -1,4 +1,3 @@
-import { SiteFooter } from "@/components/site-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -114,8 +113,6 @@ export default function TermsPage() {
           </p>
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

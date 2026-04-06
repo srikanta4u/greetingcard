@@ -1,4 +1,3 @@
-import { SiteFooter } from "@/components/site-footer";
 import Link from "next/link";
 
 export default function HomeBelowFold() {
@@ -192,8 +191,6 @@ export default function HomeBelowFold() {
           </Link>
         </div>
       </section>
-
-      <SiteFooter />
     </>
   );
 }

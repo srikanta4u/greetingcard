@@ -1,6 +1,26 @@
+"use client";
+
+import { createClient } from "@/lib/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function SiteFooter() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  useEffect(() => {
+    const supabase = createClient();
+    void supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s ?? null);
+    });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <footer className="border-t border-violet-100 bg-zinc-50 px-4 py-12 dark:border-violet-900/20 dark:bg-zinc-950">
       <div className="mx-auto max-w-6xl">
@@ -18,17 +38,30 @@ export function SiteFooter() {
             >
               Pricing
             </Link>
+            {session === undefined ? (
+              <span className="invisible select-none" aria-hidden>
+                Login
+              </span>
+            ) : session ? (
+              <Link
+                href="/dashboard"
+                className="transition hover:text-violet-700 dark:hover:text-violet-300"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                href="/auth/login"
+                className="transition hover:text-violet-700 dark:hover:text-violet-300"
+              >
+                Login
+              </Link>
+            )}
             <Link
               href="/creator/apply"
               className="transition hover:text-violet-700 dark:hover:text-violet-300"
             >
               Creator signup
-            </Link>
-            <Link
-              href="/auth/login"
-              className="transition hover:text-violet-700 dark:hover:text-violet-300"
-            >
-              Login
             </Link>
             <Link
               href="/privacy"

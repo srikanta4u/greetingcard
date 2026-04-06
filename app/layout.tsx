@@ -2,7 +2,9 @@ import { BackToTop } from "@/app/components/BackToTop";
 import { CookieBanner } from "@/app/components/CookieBanner";
 import { ToastProvider } from "@/components/Toast";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { PublicFooterGate } from "@/components/layout/PublicFooterGate";
 import { RootNavGate } from "@/components/layout/RootNavGate";
+import { SiteFooter } from "@/components/site-footer";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -79,6 +81,9 @@ export default function RootLayout({
             <AppHeader />
           </RootNavGate>
           {children}
+          <PublicFooterGate>
+            <SiteFooter />
+          </PublicFooterGate>
           <CookieBanner />
           <BackToTop />
         </ToastProvider>

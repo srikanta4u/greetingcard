@@ -1,4 +1,3 @@
-import { SiteFooter } from "@/components/site-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -98,8 +97,6 @@ export default function PrivacyPage() {
           </p>
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }

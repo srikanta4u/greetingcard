@@ -1,5 +1,4 @@
 import { ContactForm } from "@/app/contact/contact-form";
-import { SiteFooter } from "@/components/site-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -43,8 +42,6 @@ export default function ContactPage() {
           <ContactForm />
         </div>
       </main>
-
-      <SiteFooter />
     </div>
   );
 }
