@@ -1,3 +1,4 @@
+import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -11,6 +12,16 @@ type DesignRow = {
   creator_markup: number;
   created_at: string;
 };
+
+function num(v: unknown): number {
+  if (v == null) return 0;
+  if (typeof v === "number") return Number.isFinite(v) ? v : 0;
+  if (typeof v === "string") {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  }
+  return 0;
+}
 
 function formatMoney(n: number) {
   return n.toLocaleString("en-US", {
@@ -75,13 +86,66 @@ export default async function CreatorDesignsPage() {
     designs = (data ?? []) as DesignRow[];
   }
 
+  const soldByDesign = new Map<string, number>();
+  const earnedByDesign = new Map<string, number>();
+  const pendingByDesign = new Map<string, number>();
+
+  if (creator && designs.length > 0) {
+    const ids = designs.map((d) => d.id);
+    const [soldRes, ledRes] = await Promise.all([
+      adminClient
+        .from("orders")
+        .select("design_id")
+        .in("design_id", ids)
+        .in("status", ["shipped", "delivered"]),
+      adminClient
+        .from("creator_earnings_ledger")
+        .select("design_id, amount, status")
+        .eq("creator_id", creator.id)
+        .in("design_id", ids),
+    ]);
+
+    for (const r of soldRes.data ?? []) {
+      const did = (r as { design_id: string | null }).design_id;
+      if (!did) continue;
+      soldByDesign.set(did, (soldByDesign.get(did) ?? 0) + 1);
+    }
+
+    for (const r of ledRes.data ?? []) {
+      const row = r as {
+        design_id: string | null;
+        amount: unknown;
+        status: string;
+      };
+      if (!row.design_id) continue;
+      if (row.status !== "reversed") {
+        earnedByDesign.set(
+          row.design_id,
+          (earnedByDesign.get(row.design_id) ?? 0) + num(row.amount),
+        );
+      }
+      if (row.status === "pending" || row.status === "eligible") {
+        pendingByDesign.set(
+          row.design_id,
+          (pendingByDesign.get(row.design_id) ?? 0) + num(row.amount),
+        );
+      }
+    }
+  }
+
   return (
     <div className="min-h-full flex-1 bg-zinc-50 dark:bg-zinc-950">
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-4 sm:px-6">
-          <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            Your designs
-          </span>
+        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <nav className="flex gap-3 text-sm font-medium">
+            <Link
+              href="/creator/dashboard"
+              className="text-zinc-600 underline-offset-4 hover:text-zinc-900 hover:underline dark:text-zinc-400 dark:hover:text-zinc-100"
+            >
+              Dashboard
+            </Link>
+            <span className="text-violet-600 dark:text-violet-400">Designs</span>
+          </nav>
           <Link
             href="/"
             className="text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
@@ -137,7 +201,9 @@ export default async function CreatorDesignsPage() {
           <ul className="mt-10 grid gap-6 sm:grid-cols-2">
             {designs.map((d) => {
               const buyerPays = Number(d.base_price) + Number(d.creator_markup);
-              const earnings = Number(d.creator_markup) * 0.6;
+              const totalSold = soldByDesign.get(d.id) ?? 0;
+              const earningsTotal = earnedByDesign.get(d.id) ?? 0;
+              const pendingAmt = pendingByDesign.get(d.id) ?? 0;
               return (
                 <li
                   key={d.id}
@@ -164,15 +230,27 @@ export default async function CreatorDesignsPage() {
                     </div>
                     <dl className="mt-3 space-y-1 text-sm text-zinc-600 dark:text-zinc-400">
                       <div className="flex justify-between gap-2">
-                        <dt>Buyer price</dt>
+                        <dt>Total sold</dt>
                         <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatMoney(buyerPays)}
+                          {totalSold}
                         </dd>
                       </div>
                       <div className="flex justify-between gap-2">
-                        <dt>Your earnings</dt>
+                        <dt>Earnings (ledger)</dt>
                         <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
-                          {formatMoney(earnings)}
+                          {formatMoney(earningsTotal)}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt>Pending in ledger</dt>
+                        <dd className="font-medium tabular-nums text-amber-800 dark:text-amber-200/90">
+                          {formatMoney(pendingAmt)}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt>Buyer price</dt>
+                        <dd className="font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
+                          {formatMoney(buyerPays)}
                         </dd>
                       </div>
                       <div className="flex justify-between gap-2 pt-1">
@@ -180,6 +258,12 @@ export default async function CreatorDesignsPage() {
                         <dd>{formatDate(d.created_at)}</dd>
                       </div>
                     </dl>
+                    <Link
+                      href={`/creator/designs/${d.id}/edit`}
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+                    >
+                      Edit
+                    </Link>
                   </div>
                 </li>
               );

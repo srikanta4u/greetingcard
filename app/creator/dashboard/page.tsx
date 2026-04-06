@@ -417,8 +417,7 @@ export default async function CreatorDashboardPage() {
                   ) : (
                     payouts.map((p) => {
                       const tid = p.stripe_transfer_id ?? "";
-                      const shortTid =
-                        tid.length > 12 ? tid.slice(0, 12) + "…" : tid || "—";
+                      const shortTid = tid ? tid.slice(0, 12) : "—";
                       return (
                         <tr key={p.id} className="bg-white dark:bg-zinc-900">
                           <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
