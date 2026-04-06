@@ -59,22 +59,24 @@ export function ProUpgradeCta({
   async function startCheckout() {
     setLoading(true);
     try {
+      const billing = yearly ? "yearly" : "monthly";
       const res = await fetch("/api/checkout", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          billing: yearly ? "yearly" : "monthly",
-        }),
+        body: JSON.stringify({ billing }),
       });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const { url, error } = (await res.json()) as {
+        url?: string;
+        error?: string;
+      };
       if (!res.ok) {
-        console.error("[ProUpgradeCta]", data.error);
+        console.error("[ProUpgradeCta]", error);
         setLoading(false);
         return;
       }
-      if (data.url) {
-        window.location.href = data.url;
+      if (url) {
+        window.location.href = url;
         return;
       }
     } catch {
