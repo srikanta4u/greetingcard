@@ -49,22 +49,6 @@ function wwwToApexRedirect(request: NextRequest): NextResponse | null {
   return NextResponse.redirect(dest, 308);
 }
 
-function productionLoginRedirectUrl(
-  request: NextRequest,
-  redirectToPath: string,
-): URL | null {
-  if (process.env.NODE_ENV !== "production") return null;
-  const base = process.env.NEXT_PUBLIC_URL?.trim().replace(/\/$/, "");
-  if (!base) return null;
-  try {
-    const loginUrl = new URL("/auth/login", `${base}/`);
-    loginUrl.searchParams.set("redirectTo", redirectToPath || "/");
-    return loginUrl;
-  } catch {
-    return null;
-  }
-}
-
 export async function middleware(request: NextRequest) {
   const wwwRedirect = wwwToApexRedirect(request);
   if (wwwRedirect) {
@@ -106,11 +90,6 @@ export async function middleware(request: NextRequest) {
 
   if (isProtectedPath(request.nextUrl.pathname) && !user) {
     const redirectTarget = request.nextUrl.pathname;
-    const absoluteLogin = productionLoginRedirectUrl(request, redirectTarget);
-    if (absoluteLogin) {
-      return applySecurityHeaders(NextResponse.redirect(absoluteLogin));
-    }
-
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
     url.searchParams.set("redirectTo", redirectTarget);

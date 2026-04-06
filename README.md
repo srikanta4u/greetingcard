@@ -28,6 +28,6 @@ Deploy to [Vercel](https://vercel.com). Set all env vars from `.env.production.e
 
 Enable Vercel cron jobs for scheduled card processing (`vercel.json` defines a daily run of `/api/cron/process-scheduled`). Ensure `CRON_SECRET` is set in the project; Vercel will send it as a Bearer token.
 
-Use `NEXT_PUBLIC_URL` as your canonical site URL (no trailing slash). In production, middleware redirects `www` → apex when the canonical host has no `www`, and login redirects use this URL.
+Use `NEXT_PUBLIC_URL` as your canonical site URL (no trailing slash). In production, middleware redirects `www` → apex when the canonical host has no `www`. Protected routes send unauthenticated users to `/auth/login` on the same host as the request.
 
 The production build uses `output: "standalone"` in `next.config.ts` for an optimized Node server image (used by Vercel and self-hosted Docker-style deploys).
