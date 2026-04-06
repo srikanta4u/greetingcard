@@ -3,6 +3,12 @@ import { processScheduledCards } from "@/lib/processScheduledCards";
 import { adminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
+/**
+ * Vercel Cron: GET this route on the schedule in vercel.json.
+ * Set CRON_SECRET in Vercel env; Vercel sends `Authorization: Bearer <CRON_SECRET>`.
+ * @see https://vercel.com/docs/cron-jobs
+ */
+
 function bearerToken(request: Request): string | null {
   const h = request.headers.get("authorization");
   if (!h || !h.startsWith("Bearer ")) return null;
