@@ -1,10 +1,8 @@
 import { BackToTop } from "@/app/components/BackToTop";
 import { CookieBanner } from "@/app/components/CookieBanner";
 import { ToastProvider } from "@/components/Toast";
-import { AuthenticatedTopNav } from "@/components/layout/AuthenticatedTopNav";
-import { PublicMarketingNav } from "@/components/layout/PublicMarketingNav";
+import { AppHeader } from "@/components/layout/AppHeader";
 import { RootNavGate } from "@/components/layout/RootNavGate";
-import { createClient } from "@/lib/supabase/server";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -66,29 +64,19 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const hasUser = Boolean(user);
-
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body
         className={`${inter.className} flex min-h-full flex-col overflow-x-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50`}
       >
         <ToastProvider>
-          <RootNavGate hasUser={hasUser}>
-            {hasUser && user ? (
-              <AuthenticatedTopNav email={user.email ?? ""} />
-            ) : (
-              <PublicMarketingNav />
-            )}
+          <RootNavGate>
+            <AppHeader />
           </RootNavGate>
           {children}
           <CookieBanner />
