@@ -76,6 +76,7 @@ function sanitizeIlike(q: string) {
 type FetchResult = {
   designs: MarketplaceDesign[];
   count: number;
+  ok: boolean;
 };
 
 async function fetchMarketplaceDesigns(sp: {
@@ -86,74 +87,79 @@ async function fetchMarketplaceDesigns(sp: {
   sort?: string;
   page?: string;
 }): Promise<FetchResult> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  const pageNum = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
-  const from = (pageNum - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
+    const pageNum = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+    const from = (pageNum - 1) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
-  let query = supabase
-    .from("designs")
-    .select(
-      "id, title, front_image_url, base_price, creator_markup, total_sold, created_at",
-      { count: "exact" },
-    )
-    .eq("status", "active");
+    let query = supabase
+      .from("designs")
+      .select(
+        "id, title, front_image_url, base_price, creator_markup, total_sold, created_at",
+        { count: "exact" },
+      )
+      .eq("status", "active");
 
-  const qClean = sp.q ? sanitizeIlike(sp.q) : "";
-  if (qClean) {
-    query = query.ilike("title", `%${qClean}%`);
+    const qClean = sp.q ? sanitizeIlike(sp.q) : "";
+    if (qClean) {
+      query = query.ilike("title", `%${qClean}%`);
+    }
+
+    if (sp.occasion && OCCASIONS.has(sp.occasion)) {
+      query = query.contains("tags_occasion", [sp.occasion]);
+    }
+    if (sp.tone && TONES.has(sp.tone)) {
+      query = query.contains("tags_tone", [sp.tone]);
+    }
+    if (sp.recipient && RECIPIENTS.has(sp.recipient)) {
+      query = query.contains("tags_recipient", [sp.recipient]);
+    }
+
+    const sort = sp.sort && SORTS.has(sp.sort) ? sp.sort : "newest";
+    switch (sort) {
+      case "trending":
+        query = query.order("total_sold", {
+          ascending: false,
+          nullsFirst: false,
+        });
+        break;
+      case "price_low":
+        query = query
+          .order("base_price", { ascending: true })
+          .order("creator_markup", { ascending: true });
+        break;
+      case "price_high":
+        query = query
+          .order("base_price", { ascending: false })
+          .order("creator_markup", { ascending: false });
+        break;
+      case "newest":
+      default:
+        query = query.order("created_at", { ascending: false });
+        break;
+    }
+
+    const { data, error, count } = await query.range(from, to);
+
+    if (error) {
+      console.error("[marketplace] fetch designs", error);
+      return { designs: [], count: 0, ok: false };
+    }
+
+    const designs: MarketplaceDesign[] = (data ?? []).map((row) => ({
+      id: row.id as string,
+      title: row.title as string,
+      front_image_url: row.front_image_url as string,
+      base_price: Number(row.base_price),
+      creator_markup: Number(row.creator_markup),
+    }));
+    return { designs, count: count ?? 0, ok: true };
+  } catch (e) {
+    console.error("[marketplace] fetch designs", e);
+    return { designs: [], count: 0, ok: false };
   }
-
-  if (sp.occasion && OCCASIONS.has(sp.occasion)) {
-    query = query.contains("tags_occasion", [sp.occasion]);
-  }
-  if (sp.tone && TONES.has(sp.tone)) {
-    query = query.contains("tags_tone", [sp.tone]);
-  }
-  if (sp.recipient && RECIPIENTS.has(sp.recipient)) {
-    query = query.contains("tags_recipient", [sp.recipient]);
-  }
-
-  const sort = sp.sort && SORTS.has(sp.sort) ? sp.sort : "newest";
-  switch (sort) {
-    case "trending":
-      query = query.order("total_sold", {
-        ascending: false,
-        nullsFirst: false,
-      });
-      break;
-    case "price_low":
-      query = query
-        .order("base_price", { ascending: true })
-        .order("creator_markup", { ascending: true });
-      break;
-    case "price_high":
-      query = query
-        .order("base_price", { ascending: false })
-        .order("creator_markup", { ascending: false });
-      break;
-    case "newest":
-    default:
-      query = query.order("created_at", { ascending: false });
-      break;
-  }
-
-  const { data, error, count } = await query.range(from, to);
-
-  if (error) {
-    console.error("[marketplace] fetch designs", error);
-    return { designs: [], count: 0 };
-  }
-
-  const designs: MarketplaceDesign[] = (data ?? []).map((row) => ({
-    id: row.id as string,
-    title: row.title as string,
-    front_image_url: row.front_image_url as string,
-    base_price: Number(row.base_price),
-    creator_markup: Number(row.creator_markup),
-  }));
-  return { designs, count: count ?? 0 };
 }
 
 function buildPageHref(
@@ -171,6 +177,19 @@ function buildPageHref(
   return qs ? `/marketplace?${qs}` : "/marketplace";
 }
 
+function buildMarketplaceRetryHref(sp: ReturnType<typeof normalizeSearchParams>) {
+  const pageNum = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const sortForPagination =
+    sp.sort && SORTS.has(sp.sort) && sp.sort !== "newest" ? sp.sort : undefined;
+  return buildPageHref(pageNum, {
+    q: sp.q,
+    occasion: sp.occasion,
+    tone: sp.tone,
+    recipient: sp.recipient,
+    sort: sortForPagination,
+  });
+}
+
 export default async function MarketplacePage({
   searchParams,
 }: {
@@ -178,7 +197,8 @@ export default async function MarketplacePage({
 }) {
   const raw = await searchParams;
   const sp = normalizeSearchParams(raw);
-  const { designs, count } = await fetchMarketplaceDesigns(sp);
+  const { designs, count, ok: fetchOk } = await fetchMarketplaceDesigns(sp);
+  const retryHref = buildMarketplaceRetryHref(sp);
 
   const pageNum = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const totalPages = Math.max(1, Math.ceil(count / PAGE_SIZE));
@@ -223,7 +243,35 @@ export default async function MarketplacePage({
           </aside>
 
           <main className="min-w-0 flex-1">
-            {designs.length === 0 ? (
+            {!fetchOk ? (
+              <div className="rounded-2xl border border-zinc-200 bg-white px-8 py-16 text-center shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: "#7C3AED" }}
+                >
+                  Unable to load cards
+                </p>
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                  We couldn&apos;t reach the marketplace right now. Check your
+                  connection and try again.
+                </p>
+                <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                  <Link
+                    href={retryHref}
+                    className="inline-flex rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+                    style={{ backgroundColor: "#7C3AED" }}
+                  >
+                    Try Again
+                  </Link>
+                  <Link
+                    href="/marketplace"
+                    className="inline-flex rounded-xl border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  >
+                    Reset filters
+                  </Link>
+                </div>
+              </div>
+            ) : designs.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-zinc-300 bg-white px-8 py-16 text-center dark:border-zinc-700 dark:bg-zinc-900">
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   No cards found. Try different filters.

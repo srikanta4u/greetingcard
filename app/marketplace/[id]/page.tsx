@@ -4,7 +4,7 @@ import {
 } from "@/components/marketplace/DesignCustomizer";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { notFound } from "next/navigation";
 
 function occasionPhrase(tags: unknown): string {
   if (!Array.isArray(tags)) return "";
@@ -79,24 +79,10 @@ export default async function MarketplaceDesignPage({
 
   if (error) {
     console.error("[marketplace/[id]] fetch design", error);
+    throw new Error(error.message || "Failed to load design");
   }
   if (!row) {
-    return (
-      <div className="mx-auto max-w-lg px-4 py-20 text-center sm:px-6">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-          Design not found
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          This design may have been removed or is no longer available.
-        </p>
-        <Link
-          href="/marketplace"
-          className="mt-8 inline-block text-sm font-medium text-zinc-900 underline-offset-4 hover:underline dark:text-zinc-100"
-        >
-          ← Back to marketplace
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
   const design: DesignCustomizerDesign = {
