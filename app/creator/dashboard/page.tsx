@@ -129,6 +129,10 @@ export default async function CreatorDashboardPage() {
   }[];
   const designIds = designs.map((d) => d.id);
   const activeDesignCount = designs.filter((d) => d.status === "active").length;
+  const pendingDesignCount = designs.filter((d) => d.status === "pending").length;
+  const rejectedDesignCount = designs.filter(
+    (d) => d.status === "rejected",
+  ).length;
 
   const { start: monthStart, end: monthEnd } = monthUtcRange(new Date());
   let monthSalesCount = 0;
@@ -208,6 +212,8 @@ export default async function CreatorDashboardPage() {
     }))
     .sort((a, b) => b.earned - a.earned);
 
+  const totalEarnedLifetime = designTable.reduce((s, d) => s + d.earned, 0);
+
   const { data: payoutRows } = await adminClient
     .from("payouts")
     .select(
@@ -225,6 +231,11 @@ export default async function CreatorDashboardPage() {
     status: string | null;
     paid_at: string | null;
   }[];
+
+  const lastPaidAt =
+    payouts.length > 0
+      ? payouts.find((p) => p.paid_at)?.paid_at ?? null
+      : null;
 
   const { data: recentLedger } = await adminClient
     .from("creator_earnings_ledger")
@@ -268,36 +279,83 @@ export default async function CreatorDashboardPage() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-10 px-4 py-10 sm:px-6">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            Dashboard
-          </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Earnings, payouts, and sales for your marketplace designs.
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Earnings, payouts, and sales for your marketplace designs.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/creator/designs/new"
+              className="inline-flex items-center justify-center rounded-xl bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-500"
+            >
+              Upload New Design
+            </Link>
+            <Link
+              href="/creator/dashboard#recent-ledger"
+              className="inline-flex items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+            >
+              View Orders
+            </Link>
+          </div>
         </div>
 
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="grid gap-4 rounded-2xl border border-violet-100 bg-white p-5 shadow-sm dark:border-violet-900/30 dark:bg-zinc-900 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Pending earnings
+              Total earned
             </p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
+              {formatMoney(totalEarnedLifetime)}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Lifetime (ledger)
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Pending payout
+            </p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-amber-800 dark:text-amber-200/90">
               {formatMoney(pendingEarnings)}
             </p>
             <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-              Pending + eligible ledger
+              Pending + eligible
             </p>
           </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div>
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               Total paid out
             </p>
             <p className="mt-1 text-xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
               {formatMoney(totalPaidOut)}
             </p>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Completed payouts
+            </p>
           </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Last payout date
+            </p>
+            <p className="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              {lastPaidAt
+                ? new Date(lastPaidAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })
+                : "—"}
+            </p>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Most recent transfer
+            </p>
+          </div>
+          <div>
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
               This month&apos;s sales
             </p>
@@ -308,12 +366,22 @@ export default async function CreatorDashboardPage() {
               Shipped / delivered (UTC month)
             </p>
           </div>
-          <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div>
             <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Active designs
+              Design status
             </p>
-            <p className="mt-1 text-xl font-semibold tabular-nums text-zinc-900 dark:text-zinc-50">
-              {activeDesignCount}
+            <p className="mt-1 text-sm text-zinc-800 dark:text-zinc-200">
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                {activeDesignCount} active
+              </span>
+              {" · "}
+              <span className="font-semibold text-amber-700 dark:text-amber-400">
+                {pendingDesignCount} pending
+              </span>
+              {" · "}
+              <span className="font-semibold text-red-700 dark:text-red-400">
+                {rejectedDesignCount} rejected
+              </span>
             </p>
           </div>
         </section>
@@ -322,7 +390,7 @@ export default async function CreatorDashboardPage() {
           Earnings are calculated at time of shipment, not purchase.
         </div>
 
-        <section>
+        <section id="earnings-by-design">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             Earnings by design
           </h2>
@@ -449,7 +517,7 @@ export default async function CreatorDashboardPage() {
           </div>
         </section>
 
-        <section>
+        <section id="recent-ledger">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             Recent earnings ledger
           </h2>

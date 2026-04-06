@@ -2,6 +2,7 @@ import { requireAdmin } from "@/lib/admin/requireAdmin";
 import Link from "next/link";
 
 const NAV = [
+  { href: "/admin", label: "Overview" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/refunds", label: "Refunds" },
   { href: "/admin/designs", label: "Designs" },

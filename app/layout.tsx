@@ -1,3 +1,4 @@
+import { ToastProvider } from "@/components/Toast";
 import { AuthenticatedTopNav } from "@/components/layout/AuthenticatedTopNav";
 import { PublicMarketingNav } from "@/components/layout/PublicMarketingNav";
 import { RootNavGate } from "@/components/layout/RootNavGate";
@@ -70,14 +71,16 @@ export default async function RootLayout({
       <body
         className={`${inter.className} flex min-h-full flex-col overflow-x-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50`}
       >
-        <RootNavGate hasUser={hasUser}>
-          {hasUser && user ? (
-            <AuthenticatedTopNav email={user.email ?? ""} />
-          ) : (
-            <PublicMarketingNav />
-          )}
-        </RootNavGate>
-        {children}
+        <ToastProvider>
+          <RootNavGate hasUser={hasUser}>
+            {hasUser && user ? (
+              <AuthenticatedTopNav email={user.email ?? ""} />
+            ) : (
+              <PublicMarketingNav />
+            )}
+          </RootNavGate>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );

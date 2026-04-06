@@ -12,6 +12,7 @@ type DesignRow = {
   base_price: number;
   creator_markup: number;
   created_at: string;
+  rejection_reason: string | null;
 };
 
 function num(v: unknown): number {
@@ -79,7 +80,7 @@ export default async function CreatorDesignsPage() {
     const { data } = await supabase
       .from("designs")
       .select(
-        "id, title, status, front_image_url, base_price, creator_markup, created_at",
+        "id, title, status, front_image_url, base_price, creator_markup, created_at, rejection_reason",
       )
       .eq("creator_id", creator.id)
       .order("created_at", { ascending: false });
@@ -260,6 +261,16 @@ export default async function CreatorDesignsPage() {
                         <dd>{formatDate(d.created_at)}</dd>
                       </div>
                     </dl>
+                    {d.status === "rejected" && d.rejection_reason ? (
+                      <details className="mt-3 rounded-lg border border-red-200 bg-red-50/80 px-3 py-2 text-left text-sm dark:border-red-900/50 dark:bg-red-950/40">
+                        <summary className="cursor-pointer font-medium text-red-900 dark:text-red-200">
+                          Rejection reason
+                        </summary>
+                        <p className="mt-2 text-red-800 dark:text-red-100/90">
+                          {d.rejection_reason}
+                        </p>
+                      </details>
+                    ) : null}
                     <Link
                       href={`/creator/designs/${d.id}/edit`}
                       className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"

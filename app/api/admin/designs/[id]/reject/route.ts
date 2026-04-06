@@ -66,7 +66,7 @@ export async function POST(request: Request, context: RouteContext) {
 
   const { error } = await adminClient
     .from("designs")
-    .update({ status: "rejected" })
+    .update({ status: "rejected", rejection_reason: reason })
     .eq("id", id);
 
   if (error) {

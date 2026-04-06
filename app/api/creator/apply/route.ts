@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 const BIO_MAX = 500;
 
 type ApplyBody = {
+  name?: unknown;
   bio?: unknown;
   portfolio_url?: unknown;
   rights_accepted?: unknown;
@@ -27,15 +28,37 @@ export async function POST(request: Request) {
     return apiError("Invalid JSON body", 400);
   }
 
+  const name =
+    typeof body.name === "string" ? body.name.trim() : "";
   const bio =
     typeof body.bio === "string" ? body.bio.trim() : "";
   const portfolioRaw =
     typeof body.portfolio_url === "string"
       ? body.portfolio_url.trim()
       : "";
-  const portfolio_url = portfolioRaw === "" ? null : portfolioRaw;
   const rightsAccepted = body.rights_accepted === true;
 
+  if (!name) {
+    return apiError("Name is required", 400);
+  }
+  if (name.length > 120) {
+    return apiError("Name must be at most 120 characters", 400);
+  }
+  if (!portfolioRaw) {
+    return apiError("Portfolio URL is required", 400);
+  }
+  let portfolio_url: string;
+  try {
+    const u = new URL(
+      portfolioRaw.includes("://") ? portfolioRaw : `https://${portfolioRaw}`,
+    );
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      return apiError("Portfolio URL must be http or https", 400);
+    }
+    portfolio_url = u.toString();
+  } catch {
+    return apiError("Portfolio URL is not valid", 400);
+  }
   if (!bio) {
     return apiError("Bio is required", 400);
   }
@@ -44,6 +67,13 @@ export async function POST(request: Request) {
   }
   if (!rightsAccepted) {
     return apiError("You must confirm rights to your designs", 400);
+  }
+
+  const { error: updateNameErr } = await supabase.auth.updateUser({
+    data: { full_name: name },
+  });
+  if (updateNameErr) {
+    console.error("[creator/apply] updateUser", updateNameErr);
   }
 
   const { error } = await supabase.from("creators").insert({
