@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { OptimizedImage } from "@/app/components/OptimizedImage";
 import Link from "next/link";
 
 export type MarketplaceDesign = {
@@ -22,22 +22,29 @@ function formatMoney(n: number) {
   });
 }
 
-export function DesignCard({ design }: { design: MarketplaceDesign }) {
+export function DesignCard({
+  design,
+  priority = false,
+}: {
+  design: MarketplaceDesign;
+  priority?: boolean;
+}) {
   const price = finalPrice(design);
 
-  /** Card detail + WYSIWYG customizer */
   return (
     <Link
       href={`/marketplace/${design.id}`}
-      className="group block overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-200 ease-out hover:scale-[1.02] hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
+      className="group block min-w-0 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition duration-200 ease-out hover:scale-[1.02] hover:shadow-lg dark:border-zinc-800 dark:bg-zinc-900"
     >
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 dark:bg-zinc-950">
-        <Image
+        <OptimizedImage
           src={design.front_image_url}
-          alt=""
+          alt={design.title}
           fill
-          className="object-cover transition duration-200 group-hover:scale-[1.03]"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          priority={priority}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          containerClassName="absolute inset-0"
+          className="transition duration-200 group-hover:scale-[1.03]"
         />
       </div>
       <div className="p-3 sm:p-4">

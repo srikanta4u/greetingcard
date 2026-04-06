@@ -1,5 +1,6 @@
 import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -358,10 +359,11 @@ export default async function CreatorDashboardPage() {
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-md bg-zinc-100 dark:bg-zinc-800">
-                              {/* eslint-disable-next-line @next/next/no-img-element -- remote storage URL */}
-                              <img
+                              <Image
                                 src={d.front_image_url}
-                                alt=""
+                                alt={d.title}
+                                width={64}
+                                height={48}
                                 className="h-full w-full object-cover"
                               />
                             </div>

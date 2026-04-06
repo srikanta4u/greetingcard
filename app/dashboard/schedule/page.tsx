@@ -1,5 +1,6 @@
 "use client";
 
+import { OptimizedImage } from "@/app/components/OptimizedImage";
 import type { ContactEventRow, ContactRow } from "@/components/contacts/ContactsClient";
 import {
   calculateSendDate,
@@ -512,7 +513,7 @@ export default function SchedulePage() {
               </div>
             ) : (
               <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {designs.map((d) => (
+                {designs.map((d, di) => (
                   <li key={d.id}>
                     <button
                       type="button"
@@ -522,12 +523,17 @@ export default function SchedulePage() {
                       }}
                       className="w-full overflow-hidden rounded-xl border border-zinc-200 bg-white text-left shadow-sm transition hover:border-violet-400 dark:border-zinc-800 dark:bg-zinc-900"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={d.front_image_url}
-                        alt=""
-                        className="aspect-[4/3] w-full object-cover"
-                      />
+                      <div className="relative aspect-[4/3] w-full bg-zinc-100 dark:bg-zinc-950">
+                        <OptimizedImage
+                          src={d.front_image_url}
+                          alt={d.title}
+                          fill
+                          priority={di < 3}
+                          sizes="(max-width: 640px) 50vw, 33vw"
+                          containerClassName="absolute inset-0"
+                          className="object-cover"
+                        />
+                      </div>
                       <p className="p-2 text-xs font-medium text-zinc-900 dark:text-zinc-100">
                         {d.title}
                       </p>
@@ -666,11 +672,15 @@ export default function SchedulePage() {
                   {selectedDesign.title}
                 </p>
                 <div className="flex gap-3 pt-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <OptimizedImage
                     src={selectedDesign.front_image_url}
-                    alt=""
-                    className="h-20 w-14 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    alt={selectedDesign.title}
+                    fill={false}
+                    width={56}
+                    height={80}
+                    sizes="56px"
+                    className="rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    containerClassName="shrink-0 !block overflow-hidden rounded-lg"
                   />
                   <p
                     className="min-w-0 flex-1 text-zinc-600 dark:text-zinc-400"

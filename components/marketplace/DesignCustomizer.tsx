@@ -1,5 +1,6 @@
 "use client";
 
+import { OptimizedImage } from "@/app/components/OptimizedImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -171,11 +172,14 @@ export function DesignCustomizer({ design }: { design: DesignCustomizerDesign })
           </p>
           <div className="relative mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-100 shadow-md dark:border-zinc-800 dark:bg-zinc-950">
             <div className="relative aspect-[4/3] w-full">
-              {/* eslint-disable-next-line @next/next/no-img-element -- WYSIWYG preview per spec */}
-              <img
+              <OptimizedImage
                 src={displaySrc}
-                alt=""
-                className="h-full w-full object-cover"
+                alt={design.title}
+                fill
+                priority
+                sizes="(max-width: 1024px) 100vw, 60vw"
+                containerClassName="absolute inset-0"
+                className="object-cover"
               />
               {showFront && showMessage ? (
                 <div

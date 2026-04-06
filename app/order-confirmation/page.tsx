@@ -1,5 +1,6 @@
 import { stripe } from "@/lib/stripe";
 import { adminClient } from "@/lib/supabase/admin";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -160,10 +161,12 @@ export default async function OrderConfirmationPage({
             </h2>
             <div className="flex gap-4">
               {personalization?.frontImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={personalization.frontImageUrl}
-                  alt=""
+                  alt={title}
+                  width={72}
+                  height={96}
+                  priority
                   className="h-24 w-[4.5rem] shrink-0 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
                 />
               ) : null}

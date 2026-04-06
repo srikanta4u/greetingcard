@@ -2,6 +2,7 @@
 
 import { AddressForm, type StandardizedAddress } from "@/components/contacts/AddressForm";
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -262,10 +263,12 @@ export default function CheckoutPage() {
             Order summary
           </h2>
           <div className="mt-4 flex gap-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={pendingOrder.frontImageUrl}
-              alt=""
+              alt={pendingOrder.designTitle}
+              width={80}
+              height={112}
+              priority
               className="h-28 w-20 shrink-0 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
             />
             <div className="min-w-0 flex-1 space-y-2">

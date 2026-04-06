@@ -1,5 +1,6 @@
 "use client";
 
+import { OptimizedImage } from "@/app/components/OptimizedImage";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -125,7 +126,7 @@ export function UpcomingOrdersClient({
         </p>
       ) : null}
       <ul className="space-y-4">
-        {orders.map((o) => {
+        {orders.map((o, oi) => {
           const thumb = o.designs?.front_image_url;
           const contactName = o.contacts?.name ?? "Contact";
           const eventIso = eventDateFromPersonalization(o.personalization);
@@ -139,11 +140,16 @@ export function UpcomingOrdersClient({
             >
               <div className="flex min-w-0 flex-1 gap-3">
                 {thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <OptimizedImage
                     src={thumb}
-                    alt=""
-                    className="h-16 w-12 shrink-0 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    alt={o.designs?.title ?? "Card preview"}
+                    fill={false}
+                    width={48}
+                    height={64}
+                    priority={oi === 0}
+                    sizes="48px"
+                    className="rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    containerClassName="shrink-0 !block overflow-hidden rounded-lg"
                   />
                 ) : (
                   <div className="h-16 w-12 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800" />

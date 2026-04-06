@@ -1,5 +1,6 @@
 import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -209,12 +210,13 @@ export default async function CreatorDesignsPage() {
                   key={d.id}
                   className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
                 >
-                  <div className="aspect-[4/3] bg-zinc-100 dark:bg-zinc-950">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- remote Supabase storage URL */}
-                    <img
+                  <div className="relative aspect-[4/3] bg-zinc-100 dark:bg-zinc-950">
+                    <Image
                       src={d.front_image_url}
-                      alt=""
-                      className="h-full w-full object-cover"
+                      alt={d.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      className="object-cover"
                     />
                   </div>
                   <div className="p-4">

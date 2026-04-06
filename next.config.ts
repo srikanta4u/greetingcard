@@ -10,9 +10,16 @@ const SUPABASE_STORAGE_PATTERN = {
   pathname: "/storage/v1/object/public/**",
 };
 
+const PLACEHOLDER_PATTERN = {
+  protocol: "https" as const,
+  hostname: "via.placeholder.com",
+  port: "",
+  pathname: "/**",
+};
+
 const remotePatterns: NonNullable<
   NonNullable<NextConfig["images"]>["remotePatterns"]
-> = [SUPABASE_STORAGE_PATTERN];
+> = [SUPABASE_STORAGE_PATTERN, PLACEHOLDER_PATTERN];
 
 if (supabaseUrl) {
   try {

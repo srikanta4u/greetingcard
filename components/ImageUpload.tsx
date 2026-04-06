@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useRef, useState } from "react";
 import { deleteFile, uploadFile } from "@/lib/storage";
 
@@ -156,12 +157,16 @@ export function ImageUpload({
         <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
           <div className="relative flex max-h-64 items-center justify-center bg-zinc-100 dark:bg-zinc-950">
             {fileKind === "png" ? (
-              // eslint-disable-next-line @next/next/no-img-element -- dynamic user content from storage
-              <img
-                src={previewUrl}
-                alt="Uploaded preview"
-                className="max-h-64 w-full object-contain"
-              />
+              <div className="relative h-64 w-full">
+                <Image
+                  src={previewUrl}
+                  alt="Uploaded preview"
+                  fill
+                  unoptimized={previewUrl.startsWith("blob:")}
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 600px"
+                />
+              </div>
             ) : (
               <div className="flex flex-col items-center gap-2 py-10 text-zinc-600 dark:text-zinc-400">
                 <svg

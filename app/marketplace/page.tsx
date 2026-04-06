@@ -286,8 +286,12 @@ export default async function MarketplacePage({
               <>
                 {/* Each card links to /marketplace/[id] (see DesignCard href) */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {designs.map((d) => (
-                    <DesignCard key={d.id} design={d} />
+                  {designs.map((d, index) => (
+                    <DesignCard
+                      key={d.id}
+                      design={d}
+                      priority={index < 3}
+                    />
                   ))}
                 </div>
 

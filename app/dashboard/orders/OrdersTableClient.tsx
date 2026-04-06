@@ -1,5 +1,6 @@
 "use client";
 
+import { OptimizedImage } from "@/app/components/OptimizedImage";
 import { OrderStatusBadge } from "@/components/dashboard/OrderStatusBadge";
 
 export type OrderTableRow = {
@@ -63,7 +64,7 @@ export function OrdersTableClient({ orders }: { orders: OrderTableRow[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
-          {orders.map((o) => {
+          {orders.map((o, idx) => {
             const shipped =
               o.status.toLowerCase() === "shipped" ||
               o.status.toLowerCase() === "delivered";
@@ -72,11 +73,16 @@ export function OrdersTableClient({ orders }: { orders: OrderTableRow[] }) {
                 <td className="px-4 py-4">
                   <div className="flex gap-3">
                     {o.frontImageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <OptimizedImage
                         src={o.frontImageUrl}
-                        alt=""
-                        className="h-14 w-10 shrink-0 rounded-md object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                        alt={o.designTitle}
+                        fill={false}
+                        width={40}
+                        height={56}
+                        priority={idx === 0}
+                        sizes="40px"
+                        className="rounded-md object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                        containerClassName="shrink-0 !block overflow-hidden rounded-md"
                       />
                     ) : (
                       <div className="h-14 w-10 shrink-0 rounded-md bg-zinc-100 dark:bg-zinc-800" />

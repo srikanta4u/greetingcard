@@ -1,8 +1,35 @@
-import {
-  DashboardHomeClient,
-  type DashboardHomeRecentOrder,
-  type DashboardHomeUpcomingEvent,
+import type {
+  DashboardHomeRecentOrder,
+  DashboardHomeUpcomingEvent,
 } from "@/components/dashboard/DashboardHomeClient";
+import dynamic from "next/dynamic";
+
+const DashboardHomeClient = dynamic(
+  () =>
+    import("@/components/dashboard/DashboardHomeClient").then((m) => ({
+      default: m.DashboardHomeClient,
+    })),
+  {
+    loading: () => <DashboardHomeLoading />,
+  },
+);
+
+function DashboardHomeLoading() {
+  return (
+    <div className="space-y-10">
+      <div className="h-8 w-56 max-w-full animate-pulse rounded-lg bg-zinc-200 dark:bg-zinc-800" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-28 animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800"
+          />
+        ))}
+      </div>
+      <div className="h-40 animate-pulse rounded-2xl bg-zinc-200 dark:bg-zinc-800" />
+    </div>
+  );
+}
 import {
   getUpcomingEventsInWindow,
   type ContactWithEventsInput,

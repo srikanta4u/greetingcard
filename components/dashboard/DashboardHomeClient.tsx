@@ -1,5 +1,6 @@
 "use client";
 
+import { OptimizedImage } from "@/app/components/OptimizedImage";
 import { OrderStatusBadge } from "@/components/dashboard/OrderStatusBadge";
 import Link from "next/link";
 
@@ -125,7 +126,7 @@ export function DashboardHomeClient({
         </div>
       </div>
 
-      <section>
+      <section style={{ contentVisibility: "auto" }}>
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             Upcoming events
@@ -175,7 +176,7 @@ export function DashboardHomeClient({
         )}
       </section>
 
-      <section>
+      <section style={{ contentVisibility: "auto" }}>
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             Recent orders
@@ -193,17 +194,22 @@ export function DashboardHomeClient({
           </p>
         ) : (
           <ul className="mt-4 space-y-3">
-            {recentOrders.map((o) => (
+            {recentOrders.map((o, idx) => (
               <li
                 key={o.id}
                 className="flex gap-4 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
               >
                 {o.frontImageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <OptimizedImage
                     src={o.frontImageUrl}
-                    alt=""
-                    className="h-16 w-12 shrink-0 rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    alt={o.designTitle}
+                    fill={false}
+                    width={48}
+                    height={64}
+                    priority={idx === 0}
+                    sizes="48px"
+                    className="rounded-lg object-cover ring-1 ring-zinc-200 dark:ring-zinc-700"
+                    containerClassName="shrink-0 !block overflow-hidden rounded-lg"
                   />
                 ) : (
                   <div className="h-16 w-12 shrink-0 rounded-lg bg-zinc-100 dark:bg-zinc-800" />

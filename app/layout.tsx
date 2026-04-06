@@ -3,17 +3,13 @@ import { PublicMarketingNav } from "@/components/layout/PublicMarketingNav";
 import { RootNavGate } from "@/components/layout/RootNavGate";
 import { createClient } from "@/lib/supabase/server";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 const siteUrl =
@@ -70,11 +66,10 @@ export default async function RootLayout({
   const hasUser = Boolean(user);
 
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="flex min-h-full flex-col overflow-x-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50">
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <body
+        className={`${inter.className} flex min-h-full flex-col overflow-x-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50`}
+      >
         <RootNavGate hasUser={hasUser}>
           {hasUser && user ? (
             <AuthenticatedTopNav email={user.email ?? ""} />
