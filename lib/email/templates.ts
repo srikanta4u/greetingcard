@@ -188,3 +188,25 @@ export function cardSkipped(args: {
     html: shell("Card skipped", inner),
   };
 }
+
+export function creatorPayoutPaid(args: {
+  amount: number;
+  periodStart: string;
+  periodEnd: string;
+  transferId: string;
+}): { subject: string; html: string } {
+  const inner = `
+    <h1 style="margin:0 0 16px;font-size:20px;font-weight:700;color:${TEXT};">Payout sent</h1>
+    <p style="margin:0 0 20px;color:${TEXT};">We’ve processed a creator payout for your AutoCard sales.</p>
+    <table role="presentation" width="100%" style="border-collapse:collapse;margin-bottom:20px;">
+      <tr><td style="padding:8px 0;color:${MUTED};font-size:13px;">Amount</td><td style="padding:8px 0;text-align:right;font-weight:700;color:${BRAND};font-size:18px;">${escapeHtml(formatMoney(args.amount))}</td></tr>
+      <tr><td style="padding:8px 0;color:${MUTED};font-size:13px;">Period</td><td style="padding:8px 0;text-align:right;color:${TEXT};">${escapeHtml(args.periodStart)} → ${escapeHtml(args.periodEnd)}</td></tr>
+      <tr><td style="padding:8px 0;color:${MUTED};font-size:13px;">Reference</td><td style="padding:8px 0;text-align:right;font-family:monospace;font-size:12px;color:${TEXT};">${escapeHtml(args.transferId)}</td></tr>
+    </table>
+    <p style="margin:0;color:${MUTED};font-size:13px;">Funds should appear in your connected account per your payout schedule.</p>
+  `;
+  return {
+    subject: `You’ve been paid ${formatMoney(args.amount)} — AutoCard`,
+    html: shell("Payout", inner),
+  };
+}
