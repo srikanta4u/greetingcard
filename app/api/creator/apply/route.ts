@@ -1,4 +1,5 @@
 import { apiError } from "@/lib/apiError";
+import { adminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -90,6 +91,21 @@ export async function POST(request: Request) {
     }
     console.error("[creator/apply]", error);
     return apiError("Could not submit application", 500);
+  }
+
+  const { data: roleRow } = await adminClient
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (roleRow?.role !== "admin") {
+    const { error: roleErr } = await adminClient
+      .from("users")
+      .update({ role: "pending_creator" })
+      .eq("id", user.id);
+    if (roleErr) {
+      console.error("[creator/apply] role pending_creator", roleErr);
+    }
   }
 
   return NextResponse.json({ success: true });

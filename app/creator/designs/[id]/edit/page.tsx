@@ -17,12 +17,16 @@ export default async function CreatorDesignEditPage({ params }: RouteContext) {
 
   const { data: creator } = await supabase
     .from("creators")
-    .select("id")
+    .select("id, is_verified")
     .eq("user_id", user.id)
     .maybeSingle();
 
   if (!creator) {
     redirect("/creator/apply");
+  }
+
+  if ((creator as { is_verified?: boolean | null }).is_verified === false) {
+    redirect("/creator/dashboard");
   }
 
   const { data: design } = await supabase

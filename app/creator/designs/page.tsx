@@ -71,12 +71,16 @@ export default async function CreatorDesignsPage() {
 
   const { data: creator } = await supabase
     .from("creators")
-    .select("id")
+    .select("id, is_verified")
     .eq("user_id", user.id)
     .maybeSingle();
 
+  const pendingReview =
+    creator != null &&
+    (creator as { is_verified?: boolean | null }).is_verified === false;
+
   let designs: DesignRow[] = [];
-  if (creator) {
+  if (creator && !pendingReview) {
     const { data } = await supabase
       .from("designs")
       .select(
@@ -92,7 +96,7 @@ export default async function CreatorDesignsPage() {
   const earnedByDesign = new Map<string, number>();
   const pendingByDesign = new Map<string, number>();
 
-  if (creator && designs.length > 0) {
+  if (creator && !pendingReview && designs.length > 0) {
     const ids = designs.map((d) => d.id);
     const [soldRes, ledRes] = await Promise.all([
       adminClient
@@ -133,6 +137,35 @@ export default async function CreatorDesignsPage() {
         );
       }
     }
+  }
+
+  if (pendingReview) {
+    return (
+      <div className="min-h-full flex-1 bg-zinc-50 dark:bg-zinc-950">
+        <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
+            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              Creator
+            </span>
+            <Link
+              href="/"
+              className="text-sm text-zinc-600 underline-offset-4 hover:underline dark:text-zinc-400"
+            >
+              Home
+            </Link>
+          </div>
+        </header>
+        <main className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Application under review
+          </h1>
+          <p className="mt-2 max-w-lg text-sm text-zinc-600 dark:text-zinc-400">
+            Your creator application is being reviewed. You&apos;ll be able to
+            upload designs after approval.
+          </p>
+        </main>
+      </div>
+    );
   }
 
   return (

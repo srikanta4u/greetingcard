@@ -64,7 +64,7 @@ export default async function CreatorDashboardPage() {
 
   const { data: creator } = await supabase
     .from("creators")
-    .select("id, total_paid_out")
+    .select("id, total_paid_out, is_verified")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -97,6 +97,39 @@ export default async function CreatorDashboardPage() {
           >
             Apply to become a creator
           </Link>
+        </main>
+      </div>
+    );
+  }
+
+  const pendingReview =
+    (creator as { is_verified?: boolean | null }).is_verified === false;
+
+  if (pendingReview) {
+    return (
+      <div className="flex min-h-full flex-1 flex-col bg-zinc-50 dark:bg-zinc-950">
+        <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
+            <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+              Creator
+            </span>
+            <Link
+              href="/"
+              className="text-sm text-violet-600 hover:underline dark:text-violet-400"
+            >
+              Home
+            </Link>
+          </div>
+        </header>
+        <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-12 sm:px-6">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+            Application under review
+          </h1>
+          <p className="mt-2 max-w-lg text-sm text-zinc-600 dark:text-zinc-400">
+            Thanks for applying. We&apos;ll email you when your creator account
+            is approved. You&apos;ll get full access to uploads and earnings
+            then.
+          </p>
         </main>
       </div>
     );

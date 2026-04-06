@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
   const { data: creator, error: creatorError } = await supabase
     .from("creators")
-    .select("id")
+    .select("id, is_verified")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -54,6 +54,9 @@ export async function POST(request: Request) {
   }
   if (!creator) {
     return apiError("You need a creator profile to upload designs", 403);
+  }
+  if ((creator as { is_verified?: boolean | null }).is_verified === false) {
+    return apiError("Your creator application is still pending approval", 403);
   }
 
   let body: DesignsBody;
